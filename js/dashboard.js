@@ -1,6 +1,6 @@
 /**
  * ParkControl — Sistema de Controle e Gerenciamento de Estacionamento
- * js/dashboard.js — Métricas do Dashboard e Gráficos Vetoriais SVG Nativos (Tema Escuro Corporativo)
+ * js/dashboard.js — Métricas Operacionais, Mapa de Vagas e Visualizações SVG
  * Autores: João Pedro Ribas da Silva & Nicolas Ferreira Souza
  */
 
@@ -10,9 +10,7 @@ import { getFinancialMetrics } from './finance.js';
 import { formatBRL } from './utils.js';
 
 /**
- * Computa todos os indicadores operacionais do Dashboard em tempo real (RF011).
- * Todos os valores são derivados dos registros reais do protótipo.
- * 
+ * Computa os indicadores operacionais do Dashboard (RF011).
  * @returns {Object} Dados consolidados para o dashboard
  */
 export function getDashboardMetrics() {
@@ -23,17 +21,13 @@ export function getDashboardMetrics() {
 
   const todayStr = new Date().toISOString().slice(0, 10);
 
-  // Entradas de hoje (ativos que entraram hoje + saídas de hoje que entraram hoje)
-  const entriesTodayCount = activeVehicles.filter(v => v.entryTime && v.entryTime.slice(0, 10) === todayStr).length +
+  const entriesTodayCount =
+    activeVehicles.filter(v => v.entryTime && v.entryTime.slice(0, 10) === todayStr).length +
     history.filter(h => h.entryTime && h.entryTime.slice(0, 10) === todayStr).length;
 
-  // Saídas de hoje
   const exitsTodayCount = history.filter(h => h.exitTime && h.exitTime.slice(0, 10) === todayStr).length;
-
-  // Faturamento confirmado hoje
   const todayRevenue = financial.todayRevenue;
 
-  // Movimentações recentes combinadas (ativos e finalizados de hoje, ordenados por tempo decrescente)
   const recentActivities = [
     ...activeVehicles.map(v => ({
       id: v.id,
@@ -42,23 +36,23 @@ export function getDashboardMetrics() {
       driverName: v.driverName,
       timestamp: v.entryTime,
       type: 'entry',
-      typeLabel: 'Entrada Ativa',
+      typeLabel: 'No pátio',
       status: 'active'
     })),
-    ...history.slice(0, 10).map(h => ({
+    ...history.slice(0, 12).map(h => ({
       id: h.id,
       plate: h.plate,
       vehicleType: h.vehicleType,
       driverName: h.driverName,
       timestamp: h.exitTime,
       type: 'exit',
-      typeLabel: 'Saída Finalizada',
+      typeLabel: 'Concluído',
       status: 'completed',
       totalCharged: h.totalCharged
     }))
   ]
-  .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-  .slice(0, 8);
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 8);
 
   return {
     capacity,
@@ -70,31 +64,31 @@ export function getDashboardMetrics() {
 }
 
 /**
- * Gera um gráfico de barras em SVG nativo para tema escuro representando o fluxo de movimentações.
- * @param {Array<Object>} active - Veículos ativos
- * @param {Array<Object>} history - Histórico
- * @returns {string} Código SVG do gráfico
+ * Gera o gráfico SVG de movimentações por faixa de horário.
+ * @param {Array<Object>} active - Veículos no pátio
+ * @param {Array<Object>} history - Histórico de saídas
+ * @returns {string} Markup SVG
  */
 export function renderMovementsChartSVG(active, history) {
   const todayStr = new Date().toISOString().slice(0, 10);
   const hourBuckets = {
-    '06h-09h': 0,
-    '09h-12h': 0,
-    '12h-15h': 0,
-    '15h-18h': 0,
-    '18h-21h': 0,
-    '21h-24h': 0
+    '06–09h': 0,
+    '09–12h': 0,
+    '12–15h': 0,
+    '15–18h': 0,
+    '18–21h': 0,
+    '21–24h': 0
   };
 
   const countHour = (isoString) => {
     if (!isoString || isoString.slice(0, 10) !== todayStr) return;
     const hour = new Date(isoString).getHours();
-    if (hour >= 6 && hour < 9) hourBuckets['06h-09h']++;
-    else if (hour >= 9 && hour < 12) hourBuckets['09h-12h']++;
-    else if (hour >= 12 && hour < 15) hourBuckets['12h-15h']++;
-    else if (hour >= 15 && hour < 18) hourBuckets['15h-18h']++;
-    else if (hour >= 18 && hour < 21) hourBuckets['18h-21h']++;
-    else if (hour >= 21 && hour < 24) hourBuckets['21h-24h']++;
+    if (hour >= 6 && hour < 9) hourBuckets['06–09h']++;
+    else if (hour >= 9 && hour < 12) hourBuckets['09–12h']++;
+    else if (hour >= 12 && hour < 15) hourBuckets['12–15h']++;
+    else if (hour >= 15 && hour < 18) hourBuckets['15–18h']++;
+    else if (hour >= 18 && hour < 21) hourBuckets['18–21h']++;
+    else if (hour >= 21 && hour < 24) hourBuckets['21–24h']++;
   };
 
   active.forEach(v => countHour(v.entryTime));
@@ -105,140 +99,155 @@ export function renderMovementsChartSVG(active, history) {
 
   const keys = Object.keys(hourBuckets);
   const values = Object.values(hourBuckets);
-  const totalMovements = values.reduce((a, b) => a + b, 0);
   const maxVal = Math.max(...values, 4);
 
-  const width = 540;
-  const height = 190;
-  const paddingBottom = 28;
-  const paddingTop = 26;
-  const chartHeight = height - paddingTop - paddingBottom;
-  const barWidth = 42;
-  const step = (width - 60) / keys.length;
+  const width = 560;
+  const height = 195;
+  const padLeft = 34;
+  const padRight = 16;
+  const padTop = 22;
+  const padBottom = 28;
+  const plotWidth = width - padLeft - padRight;
+  const plotHeight = height - padTop - padBottom;
+  const barWidth = 38;
+  const step = plotWidth / keys.length;
 
-  // Linhas de grade sutis
-  const gridLines = [0.25, 0.5, 0.75, 1.0].map(fraction => {
-    const y = height - paddingBottom - (fraction * chartHeight);
-    return `<line x1="30" y1="${y}" x2="${width - 15}" y2="${y}" stroke="#1E293B" stroke-dasharray="3 3" stroke-width="1" />`;
+  const gridRows = [0, 0.5, 1].map(frac => {
+    const y = Math.round(height - padBottom - frac * plotHeight);
+    const tickVal = Math.round(frac * maxVal);
+    return `
+      <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#1F2937" stroke-width="1" />
+      <text x="${padLeft - 8}" y="${y + 3}" font-size="10" fill="#64748B" text-anchor="end" font-family="JetBrains Mono, monospace">${tickVal}</text>
+    `;
   }).join('');
 
-  let barsHTML = '';
-
-  keys.forEach((bucket, idx) => {
+  const barsHTML = keys.map((bucket, idx) => {
     const val = values[idx];
-    const barHeight = val > 0 ? Math.max(4, Math.round((val / maxVal) * chartHeight)) : 0;
-    const x = 34 + idx * step + (step - barWidth) / 2;
-    const y = height - paddingBottom - barHeight;
+    const barHeight = val > 0 ? Math.max(4, Math.round((val / maxVal) * plotHeight)) : 2;
+    const x = Math.round(padLeft + idx * step + (step - barWidth) / 2);
+    const y = height - padBottom - barHeight;
+    const fill = val > 0 ? '#3B82F6' : '#1E293B';
 
-    const barColor = val > 0 ? '#3B82F6' : '#1E293B';
-    const textColor = val > 0 ? '#F8FAFC' : '#64748B';
-
-    barsHTML += `
-      <g class="chart-bar-group" style="cursor: pointer;">
-        <!-- Barra de base (trilho vazio sutil) -->
-        <rect x="${x}" y="${paddingTop}" width="${barWidth}" height="${chartHeight}" rx="4" fill="#131D31" opacity="0.4" />
-        
-        <!-- Barra de volume real -->
-        ${val > 0 ? `
-          <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="4" fill="${barColor}">
-            <title>${bucket}: ${val} operação(ões)</title>
-          </rect>
-          <text x="${x + barWidth / 2}" y="${y - 8}" font-size="11" font-weight="600" fill="${textColor}" text-anchor="middle" font-family="monospace">${val}</text>
-        ` : `
-          <text x="${x + barWidth / 2}" y="${height - paddingBottom - 8}" font-size="10" fill="#475569" text-anchor="middle" font-family="monospace">-</text>
-        `}
-        <text x="${x + barWidth / 2}" y="${height - 8}" font-size="11" font-weight="500" fill="#94A3B8" text-anchor="middle">${bucket}</text>
+    return `
+      <g>
+        <rect x="${x}" y="${padTop}" width="${barWidth}" height="${plotHeight}" rx="2" fill="#0D1526" />
+        <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="2" fill="${fill}">
+          <title>${bucket}: ${val} movimentação(ões)</title>
+        </rect>
+        ${val > 0 ? `<text x="${x + barWidth / 2}" y="${y - 6}" font-size="10.5" font-weight="600" fill="#E5E7EB" text-anchor="middle" font-family="JetBrains Mono, monospace">${val}</text>` : ''}
+        <text x="${x + barWidth / 2}" y="${height - 8}" font-size="11" fill="#94A3B8" text-anchor="middle" font-family="JetBrains Mono, monospace">${bucket}</text>
       </g>
     `;
-  });
+  }).join('');
 
   return `
     <svg viewBox="0 0 ${width} ${height}" class="chart-svg" xmlns="http://www.w3.org/2000/svg">
-      ${gridLines}
-      <line x1="25" y1="${height - paddingBottom}" x2="${width - 15}" y2="${height - paddingBottom}" stroke="#334155" stroke-width="1" />
+      ${gridRows}
       ${barsHTML}
     </svg>
   `;
 }
 
 /**
- * Gera um gráfico de rosca (Donut Chart) em SVG nativo para distribuição por meio de pagamento no tema escuro.
- * @param {Object} byMethod - Estrutura com totais por método
- * @returns {string} Código HTML/SVG do gráfico
+ * Renderiza o painel de Ocupação por Categoria + Mapa Visual de Vagas do Pátio.
+ * @param {Object} capacity - Objeto retornado por getCapacityStatus()
+ * @returns {string} HTML estruturado
+ */
+export function renderCategoryBreakdownHTML(capacity) {
+  const carPct = capacity.car.total > 0 ? Math.round((capacity.car.occupied / capacity.car.total) * 100) : 0;
+  const motoPct = capacity.moto.total > 0 ? Math.round((capacity.moto.occupied / capacity.moto.total) * 100) : 0;
+
+  const maxCarCells = Math.min(capacity.car.total, 20);
+  const maxMotoCells = Math.min(capacity.moto.total, 10);
+
+  let cellsHTML = '';
+  for (let i = 1; i <= maxCarCells; i++) {
+    const isOccupied = i <= capacity.car.occupied;
+    const label = `C${String(i).padStart(2, '0')}`;
+    cellsHTML += `<div class="slot-cell ${isOccupied ? 'occupied' : ''}" title="Vaga Carro ${label}: ${isOccupied ? 'Ocupada' : 'Livre'}">${label}</div>`;
+  }
+  for (let i = 1; i <= maxMotoCells; i++) {
+    const isOccupied = i <= capacity.moto.occupied;
+    const label = `M${String(i).padStart(2, '0')}`;
+    cellsHTML += `<div class="slot-cell ${isOccupied ? 'occupied' : ''}" title="Vaga Moto ${label}: ${isOccupied ? 'Ocupada' : 'Livre'}">${label}</div>`;
+  }
+
+  return `
+    <div class="cat-breakdown-wrap">
+      <div class="cat-row">
+        <div class="cat-row-header">
+          <span class="cat-row-title">Carros / Utilitários</span>
+          <span class="cat-row-stats">${capacity.car.occupied}/${capacity.car.total} ocupadas (${capacity.car.available} livres)</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: ${carPct}%; background-color: ${carPct >= 90 ? '#EF4444' : '#3B82F6'};"></div>
+        </div>
+      </div>
+
+      <div class="cat-row">
+        <div class="cat-row-header">
+          <span class="cat-row-title">Motocicletas</span>
+          <span class="cat-row-stats">${capacity.moto.occupied}/${capacity.moto.total} ocupadas (${capacity.moto.available} livres)</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width: ${motoPct}%; background-color: ${motoPct >= 90 ? '#EF4444' : '#64748B'};"></div>
+        </div>
+      </div>
+
+      <div class="slot-matrix-section">
+        <div class="slot-matrix-header">
+          <span> Setores C (Carros) e M (Motos)</span>
+          <div class="slot-legend">
+            <span class="slot-legend-item"><span class="slot-dot slot-dot-free"></span>Livre</span>
+            <span class="slot-legend-item"><span class="slot-dot slot-dot-busy"></span>Ocupada</span>
+          </div>
+        </div>
+        <div class="slot-grid">
+          ${cellsHTML}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Renderiza o detalhamento financeiro por forma de pagamento.
+ * @param {Object} byMethod - Totais por forma de pagamento
+ * @returns {string} HTML/SVG
  */
 export function renderPaymentDistributionSVG(byMethod) {
   const methods = [
-    { key: 'pix', label: 'Pix', color: '#10B981', val: byMethod.pix ? byMethod.pix.total : 0 },
-    { key: 'credit', label: 'Cartão Crédito', color: '#3B82F6', val: byMethod.credit ? byMethod.credit.total : 0 },
-    { key: 'debit', label: 'Cartão Débito', color: '#06B6D4', val: byMethod.debit ? byMethod.debit.total : 0 },
-    { key: 'money', label: 'Dinheiro', color: '#F59E0B', val: byMethod.money ? byMethod.money.total : 0 }
+    { key: 'pix', label: 'Pix', color: '#22C55E', val: byMethod.pix ? byMethod.pix.total : 0, count: byMethod.pix ? byMethod.pix.count : 0 },
+    { key: 'credit', label: 'Cartão de Crédito', color: '#3B82F6', val: byMethod.credit ? byMethod.credit.total : 0, count: byMethod.credit ? byMethod.credit.count : 0 },
+    { key: 'debit', label: 'Cartão de Débito', color: '#60A5FA', val: byMethod.debit ? byMethod.debit.total : 0, count: byMethod.debit ? byMethod.debit.count : 0 },
+    { key: 'money', label: 'Dinheiro', color: '#F59E0B', val: byMethod.money ? byMethod.money.total : 0, count: byMethod.money ? byMethod.money.count : 0 }
   ];
 
   const total = methods.reduce((acc, m) => acc + m.val, 0);
 
-  if (total === 0) {
-    return `
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 180px; text-align: center; color: #64748B;">
-        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#334155" stroke-width="1.5" style="margin-bottom: 8px;">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M16 12h-4V8"></path>
-        </svg>
-        <span style="font-size: 13px; font-weight: 500; color: #94A3B8;">Nenhum pagamento liquidado</span>
-        <span style="font-size: 11px; color: #64748B; margin-top: 2px;">Os recebimentos finalizados no período serão totalizados aqui.</span>
-      </div>
-    `;
-  }
-
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-  let strokeOffset = 0;
-
-  const circles = methods.map(m => {
-    if (m.val === 0) return '';
-    const pct = m.val / total;
-    const strokeDasharray = `${pct * circumference} ${circumference}`;
-    const circleSvg = `
-      <circle cx="85" cy="85" r="${radius}" fill="transparent"
-        stroke="${m.color}" stroke-width="16"
-        stroke-dasharray="${strokeDasharray}"
-        stroke-dashoffset="${strokeOffset}"
-        stroke-linecap="round"
-        transform="rotate(-90 85 85)">
-        <title>${m.label}: ${formatBRL(m.val)} (${Math.round(pct * 100)}%)</title>
-      </circle>
-    `;
-    strokeOffset -= pct * circumference;
-    return circleSvg;
-  }).join('');
-
-  const legend = methods.map(m => {
-    const pct = total > 0 ? Math.round((m.val / total) * 100) : 0;
-    return `
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #162032; font-size: 12px;">
-        <span style="display: flex; align-items: center; gap: 8px;">
-          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: ${m.color};"></span>
-          <span style="color: #CBD5E1; font-weight: 500;">${m.label}</span>
-        </span>
-        <div style="text-align: right;">
-          <strong style="color: #F8FAFC; font-family: monospace;">${formatBRL(m.val)}</strong>
-          <span style="font-size: 11px; color: #64748B; margin-left: 6px;">(${pct}%)</span>
-        </div>
-      </div>
-    `;
-  }).join('');
-
   return `
-    <div style="display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
-      <svg width="170" height="170" viewBox="0 0 170 170">
-        <!-- Círculo de fundo do trilho -->
-        <circle cx="85" cy="85" r="${radius}" fill="transparent" stroke="#162032" stroke-width="16" />
-        ${circles}
-        <text x="85" y="80" font-size="10" font-weight="600" fill="#94A3B8" text-anchor="middle" letter-spacing="0.05em">RECEITA</text>
-        <text x="85" y="97" font-size="13" font-weight="700" fill="#F8FAFC" text-anchor="middle" font-family="monospace">${formatBRL(total)}</text>
-      </svg>
-      <div style="flex: 1; min-width: 200px;">
-        ${legend}
-      </div>
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      ${methods.map(m => {
+        const pct = total > 0 ? Math.round((m.val / total) * 100) : 0;
+        return `
+          <div style="display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid #182234;">
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12.5px;">
+              <span style="display: inline-flex; align-items: center; gap: 8px; color: #E5E7EB; font-weight: 500;">
+                <span style="width: 8px; height: 8px; border-radius: 2px; background-color: ${m.color};"></span>
+                ${m.label}
+              </span>
+              <span class="mono" style="color: #E5E7EB; font-weight: 600;">${formatBRL(m.val)}</span>
+            </div>
+            <div class="progress-track" style="height: 4px;">
+              <div class="progress-fill" style="width: ${pct}%; background-color: ${m.color};"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #64748B;">
+              <span>${m.count} pagamento(s)</span>
+              <span class="mono">${pct}%</span>
+            </div>
+          </div>
+        `;
+      }).join('')}
     </div>
   `;
 }
