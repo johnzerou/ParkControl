@@ -151,10 +151,10 @@ export function navigateTo(viewName) {
   const titles = {
     dashboard: 'Visão Geral e Indicadores',
     entry: 'Entrada de Veículos',
-    parked: 'Veículos Estacionados',
-    history: 'Histórico de Movimentações',
-    finance: 'Controle Financeiro',
-    settings: 'Configurações do Sistema'
+    parked: 'Pátio / Estacionados',
+    history: 'Histórico de Saídas',
+    finance: 'Fluxo Financeiro',
+    settings: 'Parâmetros Operacionais'
   };
   const titleEl = document.getElementById('current-page-title');
   if (titleEl && titles[viewName]) {
@@ -284,7 +284,7 @@ function renderDashboard() {
       recentTableBody.innerHTML = `
         <tr>
           <td colspan="5" class="empty-state">
-            <p>Nenhuma movimentação registrada hoje.</p>
+            <p>Nenhuma movimentação registrada no turno atual.</p>
           </td>
         </tr>
       `;
@@ -451,11 +451,11 @@ function renderParkedList() {
         <td colspan="7">
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-              <line x1="2" y1="10" x2="22" y2="10"></line>
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M9 16V8h4a2 2 0 0 1 0 4H9"></path>
             </svg>
-            <h4>Nenhum veículo encontrado</h4>
-            <p>${query ? 'Nenhum veículo ativo corresponde à sua pesquisa.' : 'O pátio está vazio no momento. Registre novas entradas para começar.'}</p>
+            <h4>Pátio Livre de Veículos</h4>
+            <p>${query ? 'Nenhum veículo ativo corresponde à sua pesquisa.' : 'Não há veículos estacionados no momento. Utilize o botão "+ Nova Entrada" para alocar uma vaga.'}</p>
           </div>
         </td>
       </tr>
@@ -827,8 +827,8 @@ function renderHistoryList() {
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
-            <h4>Nenhum registro histórico encontrado</h4>
-            <p>Não há movimentações concluídas correspondentes aos filtros aplicados.</p>
+            <h4>Nenhum registro localizado</h4>
+            <p>Não há movimentações finalizadas para os critérios de pesquisa selecionados.</p>
           </div>
         </td>
       </tr>
@@ -906,7 +906,7 @@ function renderFinanceDashboard() {
       tbody.innerHTML = `
         <tr>
           <td colspan="6" class="empty-state">
-            <p>Nenhuma transação financeira no período selecionado.</p>
+            <p>Nenhuma transação financeira liquidada no período selecionado.</p>
           </td>
         </tr>
       `;

@@ -14,7 +14,7 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_SETTINGS = {
-  parkingName: 'ParkControl — FATEC Carapicuíba',
+  parkingName: 'ParkControl Central',
   totalCarSpots: 20,
   totalMotoSpots: 10,
   carHourlyRate: 10.00,

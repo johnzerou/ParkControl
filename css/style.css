@@ -1,75 +1,79 @@
 /* ==========================================================================
    ParkControl — Sistema de Controle e Gerenciamento de Estacionamento
-   style.css — Estilos Globais, Variáveis, Layout Base e Estrutura Principal
-   Autores: João Pedro Ribas da Silva & Nicolas Ferreira Souza
-   FATEC Carapicuíba — ADS Noite 2026
+   style.css — Layout Base, Variáveis Globais e Estrutura Geral (Tema Escuro B2B)
+   Design Corporativo, Sóbrio e de Alta Densidade Informacional
    ========================================================================== */
 
 :root {
-  /* Paleta Obrigatória do Projeto */
-  --color-primary-dark: #0F172A;   /* Azul-escuro (Sidebar, títulos, rodapé) */
-  --color-primary: #2563EB;        /* Azul principal (Ações, links, destaques) */
-  --color-primary-hover: #1D4ED8;  /* Azul escurecido hover */
-  --color-primary-light: #EFF6FF;  /* Azul claríssimo para fundos */
-  --color-success: #16A34A;        /* Verde de sucesso */
-  --color-success-light: #DCFCE7;  /* Fundo verde suave */
-  --color-danger: #DC2626;         /* Vermelho de erro / cancelamento */
-  --color-danger-light: #FEE2E2;   /* Fundo vermelho suave */
-  --color-warning: #D97706;        /* Âmbar de atenção / tolerância */
-  --color-warning-light: #FEF3C7;  /* Fundo amarelo suave */
-  
-  --color-bg-main: #F8FAFC;        /* Cinza de fundo da aplicação */
-  --color-bg-card: #FFFFFF;        /* Branco para cartões e modais */
-  --color-border: #E2E8F0;         /* Bordas sutis */
-  --color-border-focus: #93C5FD;   /* Borda de foco */
+  /* Escala de Cores Escuras do Sistema */
+  --color-bg-base: #0B1220;        /* Fundo geral da página (Dark Navy profundo) */
+  --color-bg-sidebar: #0D1527;     /* Barra lateral e divisórias mestras */
+  --color-bg-surface: #111A2E;     /* Cartões, tabelas e contêineres principais */
+  --color-bg-elevated: #16223B;    /* Modais, cabeçalhos de tabela e drop-downs */
+  --color-bg-input: #0E1626;       /* Fundo de campos de formulário e inputs */
+  --color-bg-hover: #17243F;       /* Estados hover em linhas e itens */
 
-  /* Cores de Texto */
-  --text-main: #0F172A;            /* Títulos e textos com alto contraste */
-  --text-body: #334155;            /* Corpo de texto */
-  --text-muted: #64748B;           /* Legendas e textos secundários */
-  --text-light: #94A3B8;           /* Placeholders e ícones discretos */
-  --text-white: #FFFFFF;           /* Texto branco */
+  /* Bordas Precisas e Delimitadores */
+  --color-border: #1E293B;         /* Borda primária de componentes */
+  --color-border-subtle: #162032;  /* Divisórias internas e linhas secundárias */
+  --color-border-hover: #334155;   /* Destaque sutil de borda ao focar */
+  --color-border-focus: #3B82F6;   /* Borda ativa de input e seleção */
 
-  /* Tipografia e Escala */
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-size-xs: 0.75rem;     /* 12px */
-  --font-size-sm: 0.875rem;    /* 14px */
-  --font-size-base: 1rem;      /* 16px */
+  /* Acentos de Status e Identidade */
+  --color-primary: #3B82F6;        /* Azul corporativo técnico (não estridente) */
+  --color-primary-hover: #2563EB;  /* Azul aprofundado */
+  --color-primary-subtle: rgba(59, 130, 246, 0.12); /* Fundo de badges azuis */
+
+  --color-success: #10B981;        /* Verde esmeralda operacional */
+  --color-success-hover: #059669;
+  --color-success-subtle: rgba(16, 185, 129, 0.12);
+
+  --color-warning: #F59E0B;        /* Âmbar de atenção e tolerância */
+  --color-warning-subtle: rgba(245, 158, 11, 0.12);
+
+  --color-danger: #EF4444;         /* Vermelho sóbrio para alertas e cancelamentos */
+  --color-danger-hover: #DC2626;
+  --color-danger-subtle: rgba(239, 68, 68, 0.12);
+
+  /* Hierarquia Tipográfica de Alto Contraste */
+  --text-primary: #F8FAFC;         /* Títulos, métricas e valores ativos */
+  --text-secondary: #CBD5E1;       /* Textos corridos e dados tabulares */
+  --text-muted: #94A3B8;           /* Legendas e títulos de colunas */
+  --text-subtle: #64748B;          /* Placeholders e metadados */
+
+  /* Tipografia Corporativa */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  --font-size-xs: 0.6875rem;   /* 11px */
+  --font-size-sm: 0.8125rem;   /* 13px */
+  --font-size-base: 0.875rem;  /* 14px */
+  --font-size-md: 1rem;        /* 16px */
   --font-size-lg: 1.125rem;    /* 18px */
-  --font-size-xl: 1.25rem;     /* 20px */
-  --font-size-2xl: 1.5rem;     /* 24px */
-  --font-size-3xl: 1.875rem;   /* 30px */
+  --font-size-xl: 1.375rem;    /* 22px */
+  --font-size-2xl: 1.75rem;    /* 28px */
 
-  /* Espaçamentos */
-  --spacing-xs: 0.25rem;       /* 4px */
-  --spacing-sm: 0.5rem;        /* 8px */
-  --spacing-md: 1rem;          /* 16px */
-  --spacing-lg: 1.5rem;        /* 24px */
-  --spacing-xl: 2rem;          /* 32px */
-  --spacing-2xl: 3rem;         /* 48px */
-
-  /* Raios de Borda */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  /* Raios de Borda Disciplinados (Sem formato "fofo" ou infantil) */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
   --radius-full: 9999px;
 
-  /* Sombras */
-  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
-  --shadow-modal: 0 20px 25px -5px rgba(15, 23, 42, 0.2), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  /* Sombras Sutis e Realistas para Tema Escuro */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.45);
+  --shadow-modal: 0 20px 45px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
 
-  /* Transições */
-  --transition-fast: 150ms ease-in-out;
-  --transition-normal: 250ms ease-in-out;
+  /* Transições Precisas */
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
 
-  /* Dimensões do Layout */
-  --sidebar-width: 260px;
-  --header-height: 70px;
+  /* Dimensões Operacionais */
+  --sidebar-width: 240px;
+  --header-height: 56px;
 }
 
-/* Reset CSS Universal */
+/* Reset CSS e Configurações Globais */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -78,30 +82,48 @@
 
 html {
   font-size: 16px;
-  scroll-behavior: smooth;
+  color-scheme: dark;
+  background-color: var(--color-bg-base);
 }
 
 body {
-  font-family: var(--font-family);
+  font-family: var(--font-sans);
   font-size: var(--font-size-base);
-  color: var(--text-body);
-  background-color: var(--color-bg-main);
-  line-height: 1.5;
+  color: var(--text-secondary);
+  background-color: var(--color-bg-base);
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   display: flex;
 }
 
-/* Foco Visível para Acessibilidade */
+/* Barra de rolagem escura e discreta */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: var(--radius-sm);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Acessibilidade de Foco */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible {
   outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 
-/* Contêiner Geral da Aplicação */
+/* Estrutura Principal */
 .app-container {
   display: flex;
   width: 100%;
@@ -109,12 +131,12 @@ select:focus-visible {
 }
 
 /* ==========================================================================
-   Sidebar Lateral
+   Sidebar Lateral — Tema Escuro Corporativo
    ========================================================================== */
 .sidebar {
   width: var(--sidebar-width);
-  background-color: var(--color-primary-dark);
-  color: var(--text-white);
+  background-color: var(--color-bg-sidebar);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -122,145 +144,222 @@ select:focus-visible {
   bottom: 0;
   left: 0;
   z-index: 100;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  user-select: none;
 }
 
 .sidebar-header {
-  padding: var(--spacing-lg) var(--spacing-md);
+  height: var(--header-height);
+  padding: 0 16px;
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-bg-sidebar);
 }
 
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
-  color: var(--text-white);
+  color: var(--text-primary);
 }
 
 .brand-icon {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, #1E40AF 100%);
+  width: 30px;
+  height: 30px;
+  background-color: #1E293B;
+  border: 1px solid #334155;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+  color: var(--color-primary);
 }
 
 .brand-info h1 {
-  font-size: var(--font-size-lg);
+  font-size: 0.875rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  line-height: 1.1;
 }
 
 .brand-info span {
-  font-size: var(--font-size-xs);
-  color: var(--text-light);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
   display: block;
 }
 
 .sidebar-nav {
   flex: 1;
-  padding: var(--spacing-md) var(--spacing-sm);
+  padding: 16px 10px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .nav-label {
-  font-size: var(--font-size-xs);
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-light);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  margin-bottom: var(--spacing-xs);
-  font-weight: 600;
+  color: var(--text-subtle);
+  padding: 4px 8px;
+  font-weight: 700;
 }
 
 .nav-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .nav-item button {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
+  gap: 10px;
+  padding: 7px 10px;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
-  color: #CBD5E1;
+  border-radius: var(--radius-md);
+  color: #94A3B8;
   font-size: var(--font-size-sm);
   font-weight: 500;
   text-align: left;
   cursor: pointer;
   transition: all var(--transition-fast);
+  position: relative;
 }
 
 .nav-item button svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: transform var(--transition-fast);
+  flex-shrink: 0;
+  opacity: 0.8;
 }
 
 .nav-item button:hover {
-  background-color: rgba(255, 255, 255, 0.08);
-  color: var(--text-white);
+  background-color: var(--color-bg-hover);
+  color: var(--text-primary);
 }
 
 .nav-item button:hover svg {
-  transform: scale(1.08);
+  opacity: 1;
 }
 
+/* Item Ativo: Elegante, sem cara de botão brilhante gigante */
 .nav-item.active button {
-  background-color: var(--color-primary);
-  color: var(--text-white);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+  background-color: #16223B;
+  color: var(--text-primary);
+  font-weight: 600;
+  border-left: 2px solid var(--color-primary);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.nav-item.active button svg {
+  color: var(--color-primary);
+  opacity: 1;
 }
 
 .nav-item .badge-count {
   margin-left: auto;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #fff;
+  background-color: #1E293B;
+  border: 1px solid #334155;
+  color: #E2E8F0;
   font-size: 11px;
-  padding: 2px 7px;
-  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
 }
 
+/* Seção de Ferramentas / Ambiente de Testes */
+.sidebar-tools-section {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn-tool-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.btn-tool-action svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+
+.btn-tool-action:hover {
+  background-color: #16223B;
+  border-color: var(--color-border);
+  color: var(--text-primary);
+}
+
+.btn-tool-action.btn-tool-reset:hover {
+  color: #F87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* Rodapé Sóbrio da Sidebar */
 .sidebar-footer {
-  padding: var(--spacing-md);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background-color: rgba(0, 0, 0, 0.15);
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-border);
+  background-color: #0A101D;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.6875rem;
+  color: var(--text-subtle);
 }
 
-.academic-badge {
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--text-light);
+.system-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.academic-badge strong {
-  color: #E2E8F0;
-  display: block;
+.system-status-indicator .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-success);
 }
 
 /* ==========================================================================
-   Conteúdo Principal e Cabeçalho
+   Header Superior — Corporativo & Limpo
    ========================================================================== */
 .main-wrapper {
   margin-left: var(--sidebar-width);
@@ -268,131 +367,131 @@ select:focus-visible {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--color-bg-main);
+  background-color: var(--color-bg-base);
 }
 
-/* Header Superior */
 .top-header {
   height: var(--header-height);
-  background-color: var(--color-bg-card);
+  background-color: var(--color-bg-sidebar);
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-xl);
+  padding: 0 24px;
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: var(--shadow-sm);
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: 12px;
 }
 
 .menu-toggle-btn {
   display: none;
   background: transparent;
-  border: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  padding: var(--spacing-xs);
-  color: var(--text-main);
+  padding: 5px;
+  color: var(--text-muted);
+}
+
+.header-title-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .header-title-wrapper h2 {
-  font-size: var(--font-size-lg);
+  font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--text-main);
-  line-height: 1.2;
+  color: var(--text-primary);
+  line-height: 1;
 }
 
 .header-title-wrapper p {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+  border-left: 1px solid #1E293B;
+  padding-left: 8px;
+  margin-left: 4px;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: 12px;
 }
 
+/* Indicador Discreto de Vagas Livres */
 .status-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background-color: var(--color-primary-light);
-  border: 1px solid #BFDBFE;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  color: var(--color-primary);
+  gap: 6px;
+  padding: 4px 10px;
+  background-color: #0E1A2E;
+  border: 1px solid #1E3A5F;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: #60A5FA;
   font-weight: 600;
+  font-family: var(--font-mono);
 }
 
 .status-indicator-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background-color: var(--color-success);
-  animation: pulse-dot 2s infinite;
 }
 
-@keyframes pulse-dot {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
-  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
-}
-
+/* Relógio Tabular em Monospace */
 .header-clock {
-  font-family: monospace;
-  font-size: var(--font-size-sm);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
   color: var(--text-muted);
-  background: #F1F5F9;
-  padding: 6px 10px;
+  background-color: #111A2E;
+  padding: 4px 8px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--color-border);
+  letter-spacing: 0.05em;
 }
 
 /* Área de Telas (Views) */
 .content-area {
   flex: 1;
-  padding: var(--spacing-xl);
-  max-width: 1400px;
+  padding: 24px;
+  max-width: 1440px;
   width: 100%;
   margin: 0 auto;
 }
 
 .app-view {
   display: none;
-  animation: fadeIn 200ms ease-in-out;
 }
 
 .app-view.active {
   display: block;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 /* ==========================================================================
-   Rodapé com Créditos Acadêmicos
+   Rodapé Sóbrio da Aplicação
    ========================================================================== */
 .app-footer {
-  background-color: var(--color-bg-card);
+  background-color: var(--color-bg-sidebar);
   border-top: 1px solid var(--color-border);
-  padding: var(--spacing-md) var(--spacing-xl);
-  text-align: center;
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  padding: 10px 24px;
+  font-size: 0.6875rem;
+  color: var(--text-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .app-footer p {
   margin: 0;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
 }
-

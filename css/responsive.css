@@ -1,15 +1,12 @@
 /* ==========================================================================
    ParkControl — Sistema de Controle e Gerenciamento de Estacionamento
-   responsive.css — Adaptação Responsiva para Desktop, Tablet e Mobile
-   Autores: João Pedro Ribas da Silva & Nicolas Ferreira Souza
-   FATEC Carapicuíba — ADS Noite 2026
+   responsive.css — Adaptação Responsiva em Tema Escuro (Desktop, Tablet, Mobile)
    ========================================================================== */
 
-/* Dispositivos Tablet e Médios (<= 1024px) */
+/* Telas Médias e Tablets (<= 1024px) */
 @media screen and (max-width: 1024px) {
   :root {
-    --sidebar-width: 220px;
-    --spacing-xl: 1.25rem;
+    --sidebar-width: 210px;
   }
 
   .kpi-grid {
@@ -17,7 +14,7 @@
   }
 
   .content-area {
-    padding: var(--spacing-lg);
+    padding: 18px;
   }
 
   .form-grid {
@@ -25,17 +22,18 @@
   }
 }
 
-/* Dispositivos Mobile e Telas Menores (< 768px) */
+/* Telas Mobile e Menores (< 768px) */
 @media screen and (max-width: 768px) {
   :root {
-    --header-height: 60px;
+    --header-height: 52px;
   }
 
   .sidebar {
     transform: translateX(-100%);
     transition: transform var(--transition-normal);
     box-shadow: var(--shadow-modal);
-    width: 280px;
+    width: 260px;
+    background-color: #0A101D;
   }
 
   .sidebar.mobile-open {
@@ -51,9 +49,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: var(--radius-sm);
+    width: 32px;
+    height: 32px;
   }
 
   .header-clock {
@@ -65,16 +62,16 @@
   }
 
   .top-header {
-    padding: 0 var(--spacing-md);
+    padding: 0 16px;
   }
 
   .content-area {
-    padding: var(--spacing-md);
+    padding: 16px;
   }
 
   .kpi-grid {
     grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
+    gap: 10px;
   }
 
   .vehicle-selector-grid {
@@ -88,7 +85,7 @@
   .card-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--spacing-xs);
+    gap: 8px;
   }
 
   .card-footer {
@@ -101,13 +98,13 @@
 
   .data-table th,
   .data-table td {
-    padding: 10px 12px;
+    padding: 9px 12px;
   }
 
   .toast-container {
-    left: 16px;
-    right: 16px;
-    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
   }
 
   .toast {
@@ -116,20 +113,19 @@
   }
 }
 
-/* Telas Ultra Pequenas (< 480px) */
+/* Dispositivos Pequenos (< 480px) */
 @media screen and (max-width: 480px) {
   .status-badge span.status-text {
     display: none;
   }
 
   .btn {
-    padding: 8px 14px;
+    padding: 6px 12px;
     font-size: var(--font-size-xs);
   }
 
   .form-control.plate-input {
-    font-size: 1.1rem;
+    font-size: 1rem;
     letter-spacing: 0.1em;
   }
 }
-

@@ -1,19 +1,18 @@
 /* ==========================================================================
    ParkControl — Sistema de Controle e Gerenciamento de Estacionamento
-   components.css — Componentes de Interface, Cards, Tabelas, Modais e Toasts
+   components.css — Componentes de Interface Corporativos (Tema Escuro B2B)
    Autores: João Pedro Ribas da Silva & Nicolas Ferreira Souza
-   FATEC Carapicuíba — ADS Noite 2026
    ========================================================================== */
 
 /* ==========================================================================
-   Botões
+   Botões Corporativos
    ========================================================================== */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 18px;
+  gap: 7px;
+  padding: 7px 14px;
   font-size: var(--font-size-sm);
   font-weight: 600;
   border-radius: var(--radius-md);
@@ -23,90 +22,88 @@
   text-decoration: none;
   line-height: 1.25;
   white-space: nowrap;
+  font-family: inherit;
 }
 
 .btn svg {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
+/* Ação Principal: Azul Técnico Restrito */
 .btn-primary {
-  background-color: var(--color-primary);
-  color: var(--text-white);
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  background-color: #2563EB;
+  border-color: #3B82F6;
+  color: #FFFFFF;
 }
 
 .btn-primary:hover {
-  background-color: var(--color-primary-hover);
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
-  transform: translateY(-1px);
+  background-color: #1D4ED8;
+  border-color: #2563EB;
 }
 
 .btn-success {
-  background-color: var(--color-success);
-  color: var(--text-white);
-  box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);
+  background-color: #059669;
+  border-color: #10B981;
+  color: #FFFFFF;
 }
 
 .btn-success:hover {
-  background-color: #15803D;
-  box-shadow: 0 4px 8px rgba(22, 163, 74, 0.3);
-  transform: translateY(-1px);
+  background-color: #047857;
 }
 
 .btn-danger {
-  background-color: var(--color-danger);
-  color: var(--text-white);
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+  background-color: #DC2626;
+  border-color: #EF4444;
+  color: #FFFFFF;
 }
 
 .btn-danger:hover {
   background-color: #B91C1C;
-  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.3);
-  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background-color: #F1F5F9;
-  border-color: var(--color-border);
-  color: var(--text-body);
+  background-color: #16223B;
+  border-color: #243049;
+  color: var(--text-secondary);
 }
 
 .btn-secondary:hover {
-  background-color: #E2E8F0;
-  color: var(--text-main);
+  background-color: #1E2D4A;
+  border-color: #334155;
+  color: var(--text-primary);
 }
 
 .btn-outline {
   background-color: transparent;
   border-color: var(--color-border);
-  color: var(--text-body);
+  color: var(--text-muted);
 }
 
 .btn-outline:hover {
-  background-color: var(--color-primary-light);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background-color: #16223B;
+  border-color: #334155;
+  color: var(--text-primary);
 }
 
 .btn-sm {
-  padding: 6px 12px;
+  padding: 5px 10px;
   font-size: var(--font-size-xs);
   border-radius: var(--radius-sm);
 }
 
 .btn-sm svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 
 .btn-lg {
-  padding: 14px 24px;
+  padding: 10px 18px;
   font-size: var(--font-size-base);
   border-radius: var(--radius-md);
 }
@@ -116,146 +113,140 @@
 }
 
 .btn:disabled {
-  opacity: 0.55;
+  opacity: 0.4;
   cursor: not-allowed;
   pointer-events: none;
-  box-shadow: none !important;
-  transform: none !important;
 }
 
 /* ==========================================================================
-   Cards & Superfícies
+   Cards e Superfícies
    ========================================================================== */
 .card {
-  background-color: var(--color-bg-card);
+  background-color: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  margin-bottom: var(--spacing-lg);
-  transition: box-shadow var(--transition-fast);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
+  margin-bottom: 20px;
 }
 
 .card-header {
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 14px 18px;
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #FFFFFF;
+  background-color: #0E1626;
 }
 
 .card-header h3 {
-  font-size: var(--font-size-base);
+  font-size: 0.875rem;
   font-weight: 700;
-  color: var(--text-main);
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .card-header p {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+  margin-top: 1px;
 }
 
 .card-body {
-  padding: var(--spacing-lg);
+  padding: 18px;
 }
 
 .card-footer {
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 12px 18px;
   border-top: 1px solid var(--color-border);
-  background-color: #F8FAFC;
+  background-color: #0E1626;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
+  gap: 8px;
 }
 
 /* ==========================================================================
-   Cards de KPI (Dashboard e Financeiro)
+   Cards de KPI (Dashboard & Financeiro) — Padrão Enterprise
    ========================================================================== */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
 .kpi-card {
-  background-color: var(--color-bg-card);
+  background-color: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
+  padding: 16px;
   display: flex;
   flex-direction: column;
   position: relative;
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast);
 }
 
 .kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  border-color: #334155;
 }
 
 .kpi-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: 8px;
 }
 
 .kpi-title {
-  font-size: var(--font-size-xs);
+  font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
 }
 
+/* Ícone Discreto sem formato de botão infantil */
 .kpi-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-md);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid transparent;
 }
 
 .kpi-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 15px;
+  height: 15px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-width: 1.8;
 }
 
-.kpi-icon.blue { background-color: var(--color-primary-light); color: var(--color-primary); }
-.kpi-icon.green { background-color: var(--color-success-light); color: var(--color-success); }
-.kpi-icon.amber { background-color: var(--color-warning-light); color: var(--color-warning); }
-.kpi-icon.red { background-color: var(--color-danger-light); color: var(--color-danger); }
-.kpi-icon.slate { background-color: #F1F5F9; color: var(--color-primary-dark); }
+.kpi-icon.blue { background-color: #0E1A2E; border-color: #1E3A5F; color: #60A5FA; }
+.kpi-icon.green { background-color: #0D281E; border-color: #134E39; color: #34D399; }
+.kpi-icon.amber { background-color: #2D2310; border-color: #5B4314; color: #FBBF24; }
+.kpi-icon.slate { background-color: #162032; border-color: #243049; color: #94A3B8; }
 
 .kpi-value {
-  font-size: var(--font-size-2xl);
-  font-weight: 800;
-  color: var(--text-main);
-  line-height: 1.1;
-  margin-bottom: var(--spacing-xs);
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.15;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .kpi-footer {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  font-size: 0.75rem;
+  color: var(--text-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -264,8 +255,8 @@
 
 .progress-bar-container {
   width: 100%;
-  height: 6px;
-  background-color: #E2E8F0;
+  height: 4px;
+  background-color: #162032;
   border-radius: var(--radius-full);
   margin-top: 8px;
   overflow: hidden;
@@ -275,81 +266,84 @@
   height: 100%;
   background-color: var(--color-primary);
   border-radius: var(--radius-full);
-  transition: width 400ms ease;
+  transition: width 300ms ease;
 }
 
 .progress-bar-fill.warning { background-color: var(--color-warning); }
 .progress-bar-fill.danger { background-color: var(--color-danger); }
 
 /* ==========================================================================
-   Badges e Tags
+   Badges e Tags Discretas
    ========================================================================== */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 9px;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  font-size: 0.6875rem;
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
 }
 
 .badge-car {
-  background-color: #DBEAFE;
-  color: #1E40AF;
-  border: 1px solid #BFDBFE;
+  background-color: #0E1A2E;
+  color: #60A5FA;
+  border: 1px solid #1E3A5F;
 }
 
 .badge-moto {
-  background-color: #FEF3C7;
-  color: #92400E;
-  border: 1px solid #FDE68A;
+  background-color: #2D2310;
+  color: #FBBF24;
+  border: 1px solid #5B4314;
 }
 
 .badge-success {
-  background-color: var(--color-success-light);
-  color: #166534;
-  border: 1px solid #BBF7D0;
+  background-color: #0D281E;
+  color: #34D399;
+  border: 1px solid #134E39;
 }
 
 .badge-warning {
-  background-color: var(--color-warning-light);
-  color: #B45309;
-  border: 1px solid #FDE68A;
+  background-color: #2D2310;
+  color: #FBBF24;
+  border: 1px solid #5B4314;
 }
 
 .badge-danger {
-  background-color: var(--color-danger-light);
-  color: #991B1B;
-  border: 1px solid #FECACA;
+  background-color: #2B1517;
+  color: #F87171;
+  border: 1px solid #4C1D24;
 }
 
 .badge-outline {
   background-color: transparent;
   border: 1px solid var(--color-border);
-  color: var(--text-body);
+  color: var(--text-muted);
 }
 
 /* ==========================================================================
-   Formulários
+   Formulários e Inputs de Precisão
    ========================================================================== */
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
 }
 
 .form-group {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 14px;
   display: flex;
   flex-direction: column;
 }
 
 .form-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   margin-bottom: 6px;
   display: flex;
   align-items: center;
@@ -364,40 +358,43 @@
 .form-control,
 .form-select {
   width: 100%;
-  padding: 10px 14px;
-  font-size: var(--font-size-base);
+  padding: 8px 12px;
+  font-size: var(--font-size-sm);
   font-family: inherit;
-  color: var(--text-main);
-  background-color: #FFFFFF;
+  color: var(--text-primary);
+  background-color: var(--color-bg-input);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .form-control:focus,
 .form-select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 1px var(--color-primary);
 }
 
 .form-control.plate-input {
   text-transform: uppercase;
-  font-family: monospace;
-  font-size: 1.25rem;
-  letter-spacing: 0.15em;
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  letter-spacing: 0.14em;
   font-weight: 700;
   text-align: center;
+  background-color: #070C15;
+  border-color: #243049;
+  color: #F8FAFC;
 }
 
 .form-hint {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
+  font-size: 0.6875rem;
+  color: var(--text-subtle);
   margin-top: 4px;
 }
 
 .form-error {
-  font-size: var(--font-size-xs);
+  font-size: 0.75rem;
   color: var(--color-danger);
   margin-top: 4px;
   display: none;
@@ -408,36 +405,35 @@
   display: block;
 }
 
-/* Seletor Customizado de Categoria de Veículo */
+/* Seletor Segmentado de Categoria (Estilo Hardware / Industrial) */
 .vehicle-selector-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .vehicle-type-card {
-  border: 2px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 14px;
-  background-color: #FFFFFF;
+  gap: 12px;
+  background-color: #0E1626;
   transition: all var(--transition-fast);
   position: relative;
 }
 
 .vehicle-type-card:hover {
-  border-color: #93C5FD;
-  background-color: #F8FAFC;
+  border-color: #334155;
+  background-color: #121C30;
 }
 
 .vehicle-type-card.selected {
   border-color: var(--color-primary);
-  background-color: var(--color-primary-light);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  background-color: #132238;
 }
 
 .vehicle-type-card input[type="radio"] {
@@ -447,34 +443,37 @@
 }
 
 .vehicle-type-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  background-color: #F1F5F9;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background-color: #162032;
+  border: 1px solid #243049;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary-dark);
+  color: var(--text-muted);
 }
 
 .vehicle-type-card.selected .vehicle-type-icon {
   background-color: var(--color-primary);
+  border-color: #60A5FA;
   color: #FFFFFF;
 }
 
 .vehicle-type-info h4 {
   font-size: var(--font-size-sm);
-  font-weight: 700;
-  color: var(--text-main);
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .vehicle-type-info p {
-  font-size: var(--font-size-xs);
+  font-size: 0.6875rem;
   color: var(--text-muted);
+  font-family: var(--font-mono);
 }
 
 /* ==========================================================================
-   Tabelas de Dados
+   Tabelas de Dados — Alta Densidade & Legibilidade
    ========================================================================== */
 .table-responsive {
   width: 100%;
@@ -490,40 +489,42 @@
 }
 
 .data-table thead {
-  background-color: #F8FAFC;
-  border-bottom: 2px solid var(--color-border);
+  background-color: #0E1626;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .data-table th {
-  padding: 12px 16px;
-  font-weight: 700;
+  padding: 10px 14px;
+  font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
-  font-size: var(--font-size-xs);
+  font-size: 0.6875rem;
   letter-spacing: 0.05em;
   white-space: nowrap;
 }
 
 .data-table td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--color-border);
-  color: var(--text-body);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  color: var(--text-secondary);
   vertical-align: middle;
 }
 
 .data-table tbody tr {
+  background-color: var(--color-bg-surface);
   transition: background-color var(--transition-fast);
 }
 
 .data-table tbody tr:hover {
-  background-color: #F1F5F9;
+  background-color: var(--color-bg-hover);
 }
 
+/* Badge de Placa: Efeito Metálico Matte Sóbrio */
 .plate-badge {
-  font-family: monospace;
-  font-size: 0.95rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
   font-weight: 700;
-  background-color: #0F172A;
+  background-color: #050911;
   color: #F8FAFC;
   padding: 3px 8px;
   border-radius: var(--radius-sm);
@@ -534,32 +535,33 @@
 
 .empty-state {
   text-align: center;
-  padding: var(--spacing-2xl) var(--spacing-lg);
+  padding: 36px 16px;
   color: var(--text-muted);
 }
 
 .empty-state svg {
-  width: 64px;
-  height: 64px;
-  color: #CBD5E1;
-  margin-bottom: var(--spacing-md);
+  width: 42px;
+  height: 42px;
+  color: #334155;
+  margin-bottom: 10px;
 }
 
 .empty-state h4 {
   font-size: var(--font-size-base);
-  font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: var(--spacing-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
 }
 
 .empty-state p {
-  font-size: var(--font-size-sm);
-  max-width: 400px;
+  font-size: var(--font-size-xs);
+  max-width: 360px;
   margin: 0 auto;
+  color: var(--text-subtle);
 }
 
 /* ==========================================================================
-   Modais
+   Modais Corporativos
    ========================================================================== */
 .modal-backdrop {
   position: fixed;
@@ -567,100 +569,90 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(15, 23, 42, 0.65);
+  background-color: rgba(4, 7, 15, 0.75);
   backdrop-filter: blur(4px);
   display: none;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: var(--spacing-md);
-  animation: modalFadeIn 180ms ease-out forwards;
+  padding: 16px;
 }
 
 .modal-backdrop.active {
   display: flex;
 }
 
-@keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .modal-dialog {
-  background-color: var(--color-bg-card);
+  background-color: #111A2E;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-modal);
   width: 100%;
-  max-width: 540px;
+  max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-  border: 1px solid var(--color-border);
-  animation: modalSlideUp 200ms ease-out forwards;
-}
-
-@keyframes modalSlideUp {
-  from { transform: translateY(12px) scale(0.98); }
-  to { transform: translateY(0) scale(1); }
+  border: 1px solid #243049;
 }
 
 .modal-header {
-  padding: var(--spacing-lg);
+  padding: 14px 18px;
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: #0E1626;
 }
 
 .modal-header h3 {
-  font-size: var(--font-size-lg);
+  font-size: 0.9375rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: var(--text-primary);
 }
 
 .modal-close-btn {
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 4px;
+  padding: 3px;
   color: var(--text-muted);
   border-radius: var(--radius-sm);
+  font-size: 14px;
 }
 
 .modal-close-btn:hover {
-  background-color: #F1F5F9;
-  color: var(--text-main);
+  background-color: #1E293B;
+  color: var(--text-primary);
 }
 
 .modal-body {
-  padding: var(--spacing-lg);
+  padding: 18px;
 }
 
 .modal-footer {
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 12px 18px;
   border-top: 1px solid var(--color-border);
-  background-color: #F8FAFC;
+  background-color: #0E1626;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--spacing-sm);
+  gap: 8px;
 }
 
-/* Detalhes de Checkout */
+/* Resumo de Checkout em Caixa Escura */
 .checkout-summary-box {
-  background-color: #F8FAFC;
+  background-color: #0E1626;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
+  padding: 14px;
+  margin-bottom: 14px;
 }
 
 .checkout-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
-  font-size: var(--font-size-sm);
-  border-bottom: 1px dashed var(--color-border);
+  padding: 5px 0;
+  font-size: var(--font-size-xs);
+  border-bottom: 1px dashed #1E293B;
 }
 
 .checkout-row:last-child {
@@ -668,178 +660,185 @@
 }
 
 .checkout-row.total {
-  border-top: 2px solid var(--color-border);
+  border-top: 1px solid #243049;
   margin-top: 8px;
-  padding-top: 12px;
-  font-size: var(--font-size-lg);
-  font-weight: 800;
-  color: var(--text-main);
+  padding-top: 10px;
+  font-size: var(--font-size-base);
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .checkout-row.total .price-highlight {
-  color: var(--color-primary);
-  font-size: 1.5rem;
+  color: #60A5FA;
+  font-size: 1.25rem;
+  font-family: var(--font-mono);
 }
 
 .payment-methods-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin: var(--spacing-md) 0;
+  gap: 8px;
+  margin: 12px 0;
 }
 
 .payment-method-btn {
-  padding: 12px;
-  border: 2px solid var(--color-border);
+  padding: 10px 8px;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  background: #fff;
+  background: #0E1626;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-weight: 600;
-  font-size: var(--font-size-xs);
-  color: var(--text-main);
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
   transition: all var(--transition-fast);
 }
 
 .payment-method-btn svg {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
+  opacity: 0.8;
 }
 
 .payment-method-btn:hover {
-  border-color: #93C5FD;
-  background-color: #F8FAFC;
+  border-color: #334155;
+  background-color: #121C30;
 }
 
 .payment-method-btn.selected {
   border-color: var(--color-primary);
-  background-color: var(--color-primary-light);
+  background-color: #132238;
+  color: #93C5FD;
+}
+
+.payment-method-btn.selected svg {
   color: var(--color-primary);
+  opacity: 1;
 }
 
 /* ==========================================================================
-   Comprovante de Entrada e Recibo de Saída (Térmico / Impressão)
+   Comprovante de Entrada e Recibo (Térmico / Impressão)
    ========================================================================== */
 .receipt-paper {
-  background-color: #FFFFFF;
-  border: 1px dashed #CBD5E1;
+  background-color: #070B13;
+  border: 1px dashed #243049;
   border-radius: var(--radius-sm);
-  padding: 24px;
-  font-family: "Courier New", Courier, monospace;
-  color: #0F172A;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-  margin-bottom: var(--spacing-md);
+  padding: 18px;
+  font-family: var(--font-mono);
+  color: #E2E8F0;
+  margin-bottom: 14px;
 }
 
 .receipt-header {
   text-align: center;
-  border-bottom: 1px dashed #0F172A;
-  padding-bottom: 12px;
-  margin-bottom: 12px;
+  border-bottom: 1px dashed #243049;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .receipt-header h4 {
-  font-size: 1.1rem;
-  font-weight: bold;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #F8FAFC;
 }
 
 .receipt-line {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 4px;
-  font-size: 0.85rem;
+  margin-bottom: 3px;
+  font-size: 0.75rem;
 }
 
 .receipt-divider {
-  border-top: 1px dashed #0F172A;
-  margin: 10px 0;
+  border-top: 1px dashed #243049;
+  margin: 8px 0;
 }
 
 .receipt-total {
-  font-size: 1.1rem;
-  font-weight: bold;
+  font-size: 0.9375rem;
+  font-weight: 700;
   display: flex;
   justify-content: space-between;
   margin-top: 6px;
+  color: #60A5FA;
 }
 
 .receipt-footer {
   text-align: center;
-  border-top: 1px dashed #0F172A;
-  padding-top: 10px;
-  margin-top: 12px;
-  font-size: 0.75rem;
+  border-top: 1px dashed #243049;
+  padding-top: 8px;
+  margin-top: 10px;
+  font-size: 0.6875rem;
+  color: var(--text-subtle);
 }
 
 /* ==========================================================================
-   Notificações Toast
+   Notificações Toast Corporativas
    ========================================================================== */
 .toast-container {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 20px;
+  right: 20px;
   z-index: 2000;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   pointer-events: none;
 }
 
 .toast {
   pointer-events: auto;
-  min-width: 300px;
-  max-width: 420px;
-  background-color: #FFFFFF;
+  min-width: 280px;
+  max-width: 380px;
+  background-color: #111A2E;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-modal);
-  padding: 14px 18px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  border-left: 5px solid var(--color-primary);
-  animation: toastSlideIn 250ms ease-out forwards;
-}
-
-@keyframes toastSlideIn {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  gap: 10px;
+  border: 1px solid #243049;
+  border-left: 3px solid var(--color-primary);
 }
 
 .toast.toast-success { border-left-color: var(--color-success); }
 .toast.toast-danger { border-left-color: var(--color-danger); }
 .toast.toast-warning { border-left-color: var(--color-warning); }
+.toast.toast-info { border-left-color: #38BDF8; }
 
 .toast-icon {
   flex-shrink: 0;
+  font-size: 13px;
+  font-weight: bold;
 }
 
 .toast-content h5 {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 2px;
+  color: var(--text-primary);
+  margin-bottom: 1px;
 }
 
 .toast-content p {
-  font-size: var(--font-size-xs);
-  color: var(--text-body);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
 }
 
 /* ==========================================================================
-   Gráficos Vetoriais SVG Nativos
+   Gráficos Vetoriais SVG
    ========================================================================== */
 .chart-card-wrapper {
-  background: #FFFFFF;
+  background: var(--color-bg-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
+  padding: 16px;
 }
 
 .chart-header {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -847,7 +846,7 @@
 
 .chart-svg-container {
   width: 100%;
-  height: 220px;
+  height: 190px;
   position: relative;
 }
 
@@ -866,14 +865,16 @@
   }
   .receipt-printable, .receipt-printable * {
     visibility: visible;
+    color: #000000 !important;
+    background: transparent !important;
   }
   .receipt-printable {
     position: absolute;
     left: 0;
     top: 0;
-    width: 80mm; /* Largura padrão de impressora térmica */
+    width: 80mm;
     margin: 0;
-    padding: 10px;
+    padding: 8px;
     border: none;
     box-shadow: none;
   }
@@ -881,4 +882,3 @@
     display: none !important;
   }
 }
-

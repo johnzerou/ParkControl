@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ParkControl — Sistema de Controle e Gerenciamento de Estacionamento</title>
-  <meta name="description" content="Sistema de gestão de estacionamento moderno e responsivo desenvolvido com Vanilla JS e CSS3. Protótipo acadêmico FATEC Carapicuíba.">
+  <title>ParkControl — Painel Operacional de Estacionamento</title>
+  <meta name="description" content="Console administrativo para controle operacional de pátio, fluxos de veículos, tarifação e fechamento de caixa.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/responsive.css">
@@ -13,120 +13,131 @@
 
   <div class="app-container">
     <!-- ====================================================================
-         Sidebar Lateral de Navegação
+         Sidebar Lateral de Navegação (Tema Escuro Corporativo)
          ==================================================================== -->
-    <aside class="sidebar" aria-label="Navegação Principal">
+    <aside class="sidebar" aria-label="Navegação do Sistema">
       <div class="sidebar-header">
         <a href="#" class="brand-logo" data-goto-view="dashboard">
           <div class="brand-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="5" width="20" height="14" rx="3"></rect>
-              <path d="M7 15h10M9 9h6"></path>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+              <path d="M9 17V7h4a3 3 0 0 1 0 6H9"></path>
             </svg>
           </div>
           <div class="brand-info">
             <h1>ParkControl</h1>
-            <span>Gestão de Estacionamento</span>
+            <span>Console Operacional</span>
           </div>
         </a>
       </div>
 
       <nav class="sidebar-nav">
-        <div class="nav-label">Operação</div>
-        <ul class="nav-list">
-          <li class="nav-item active">
-            <button type="button" class="nav-btn" data-view="dashboard">
-              <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-              <span>Dashboard</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-btn" data-view="entry">
-              <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"></path></svg>
-              <span>Entrada de Veículo</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-btn" data-view="parked">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              <span>Estacionados</span>
-              <span class="badge-count" id="nav-parked-count">0</span>
-            </button>
-          </li>
-        </ul>
+        <!-- Grupo: Operação de Pátio -->
+        <div class="nav-group">
+          <div class="nav-label">Operação</div>
+          <ul class="nav-list">
+            <li class="nav-item active">
+              <button type="button" class="nav-btn" data-view="dashboard">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <span>Visão Geral</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button type="button" class="nav-btn" data-view="entry">
+                <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"></path></svg>
+                <span>Entrada de Veículo</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button type="button" class="nav-btn" data-view="parked">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>Pátio / Estacionados</span>
+                <span class="badge-count" id="nav-parked-count">0</span>
+              </button>
+            </li>
+          </ul>
+        </div>
 
-        <div class="nav-label" style="margin-top: 18px;">Gestão & Auditoria</div>
-        <ul class="nav-list">
-          <li class="nav-item">
-            <button type="button" class="nav-btn" data-view="history">
-              <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              <span>Histórico</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-btn" data-view="finance">
-              <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-              <span>Financeiro</span>
-            </button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-btn" data-view="settings">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-              <span>Configurações</span>
-            </button>
-          </li>
-        </ul>
+        <!-- Grupo: Gestão e Controle -->
+        <div class="nav-group">
+          <div class="nav-label">Gestão & Auditoria</div>
+          <ul class="nav-list">
+            <li class="nav-item">
+              <button type="button" class="nav-btn" data-view="history">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <span>Histórico de Saídas</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button type="button" class="nav-btn" data-view="finance">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                <span>Fluxo Financeiro</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button type="button" class="nav-btn" data-view="settings">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span>Parâmetros</span>
+              </button>
+            </li>
+          </ul>
+        </div>
 
-        <div class="nav-label" style="margin-top: 18px;">Homologação</div>
-        <div style="display: flex; flex-direction: column; gap: 8px; padding: 0 4px;">
-          <button type="button" class="btn btn-outline btn-sm btn-seed-demo" style="color: #93C5FD; border-color: rgba(147,197,253,0.3); font-size: 11px;">
-            <svg viewBox="0 0 24 24" width="14" height="14"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            Carregar Demonstração
+        <!-- Grupo: Ferramentas Técnicas de Homologação -->
+        <div class="sidebar-tools-section">
+          <div class="nav-label">Ambiente & Teste</div>
+          <button type="button" class="btn-tool-action btn-seed-demo" title="Injeta veículos ativos e histórico demonstrativo para validação">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>Carregar Demonstração</span>
           </button>
-          <button type="button" class="btn btn-outline btn-sm btn-reset-data" style="color: #F87171; border-color: rgba(248,113,113,0.3); font-size: 11px;">
-            <svg viewBox="0 0 24 24" width="14" height="14"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-            Resetar de Fábrica
+          <button type="button" class="btn-tool-action btn-tool-reset btn-reset-data" title="Limpa o armazenamento local restaurando o pátio limpo">
+            <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            <span>Redefinir Estado (Reset)</span>
           </button>
         </div>
       </nav>
 
       <div class="sidebar-footer">
-        <div class="academic-badge">
-          <strong>FATEC Carapicuíba</strong>
-          ADS Noite — Projeto 2026
+        <div class="system-status-indicator">
+          <span class="status-dot"></span>
+          <span>Terminal Online</span>
         </div>
+        <span style="font-family: var(--font-mono); font-size: 10px; color: var(--text-subtle);">v2.4.0</span>
       </div>
     </aside>
 
     <!-- ====================================================================
-         Área de Trabalho Principal
+         Área de Trabalho Principal (Main Wrapper)
          ==================================================================== -->
     <main class="main-wrapper">
-      <!-- Cabeçalho Superior -->
+      <!-- Topbar / Cabeçalho Superior -->
       <header class="top-header">
         <div class="header-left">
-          <button type="button" class="menu-toggle-btn" id="mobile-menu-toggle" aria-label="Abrir Menu">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          <button type="button" class="menu-toggle-btn" id="mobile-menu-toggle" aria-label="Abrir Menu Lateral">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
           </button>
           <div class="header-title-wrapper">
             <h2 id="current-page-title">Visão Geral e Indicadores</h2>
-            <p id="header-establishment-name">ParkControl — FATEC Carapicuíba</p>
+            <p id="header-establishment-name">ParkControl Central</p>
           </div>
         </div>
 
         <div class="header-right">
-          <div class="status-badge">
+          <!-- Saldo de Vagas em Tempo Real -->
+          <div class="status-badge" title="Saldo atual de vagas livres no estabelecimento">
             <div class="status-indicator-dot"></div>
             <span class="status-text" id="header-available-spots">-- vagas livres</span>
           </div>
 
+          <!-- Relógio Operacional Tabular -->
           <div class="header-clock" id="header-live-clock" title="Horário Oficial do Sistema">
             --:--:--
           </div>
 
+          <!-- Botão Primário Refinado de Nova Entrada -->
           <button type="button" class="btn btn-primary btn-sm" data-goto-view="entry">
             <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Nova Entrada</span>
+            <span>+ Nova Entrada</span>
           </button>
         </div>
       </header>
@@ -135,21 +146,21 @@
       <section class="content-area">
         
         <!-- ================================================================
-             Tela 1 — Dashboard
+             Tela 1 — Dashboard / Visão Geral
              ================================================================ -->
         <article id="view-dashboard" class="app-view active">
-          <!-- Grid de KPIs Operacionais -->
+          <!-- Grid de KPIs Operacionais (Layout Corporativo Sóbrio) -->
           <div class="kpi-grid">
             <div class="kpi-card">
               <div class="kpi-header">
-                <span class="kpi-title">Vagas Totais</span>
+                <span class="kpi-title">Capacidade Homologada</span>
                 <div class="kpi-icon slate">
                   <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
                 </div>
               </div>
               <div class="kpi-value" id="dash-total-spots">0</div>
               <div class="kpi-footer">
-                <span>Capacidade homologada</span>
+                <span>Vagas Físicas Globais</span>
                 <span class="badge badge-outline">Carros + Motos</span>
               </div>
             </div>
@@ -164,20 +175,21 @@
               <div class="kpi-value" id="dash-avail-spots" style="color: var(--color-success);">0</div>
               <div class="kpi-footer">
                 <span id="dash-avail-details">0 carros | 0 motos</span>
+                <span class="badge badge-success">Disponível</span>
               </div>
             </div>
 
             <div class="kpi-card">
               <div class="kpi-header">
-                <span class="kpi-title">Vagas Ocupadas</span>
+                <span class="kpi-title">Ocupação do Pátio</span>
                 <div class="kpi-icon amber">
                   <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                 </div>
               </div>
               <div class="kpi-value" id="dash-occupied-spots">0</div>
               <div class="kpi-footer">
-                <span>Veículos no pátio</span>
-                <span id="dash-occupancy-rate" style="font-weight: 700;">0%</span>
+                <span>Taxa de Lotação</span>
+                <span id="dash-occupancy-rate" style="font-weight: 700; color: #F8FAFC; font-family: var(--font-mono);">0%</span>
               </div>
               <div class="progress-bar-container">
                 <div class="progress-bar-fill" id="dash-occupancy-bar" style="width: 0%;"></div>
@@ -186,32 +198,32 @@
 
             <div class="kpi-card">
               <div class="kpi-header">
-                <span class="kpi-title">Faturamento do Dia</span>
+                <span class="kpi-title">Faturamento Realizado (Hoje)</span>
                 <div class="kpi-icon blue">
                   <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                 </div>
               </div>
-              <div class="kpi-value" id="dash-today-revenue" style="color: var(--color-primary);">R$ 0,00</div>
+              <div class="kpi-value" id="dash-today-revenue" style="color: #60A5FA;">R$ 0,00</div>
               <div class="kpi-footer">
-                <span><span id="dash-entries-today">0</span> entradas | <span id="dash-exits-today">0</span> saídas</span>
-                <span class="badge badge-success">Hoje</span>
+                <span><span id="dash-entries-today">0</span> in / <span id="dash-exits-today">0</span> out</span>
+                <span class="badge badge-car">Liquidado</span>
               </div>
             </div>
           </div>
 
-          <!-- Gráficos e Movimentações Recentes -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
-            <!-- Gráfico de Movimentações Horárias -->
+          <!-- Gráficos de Fluxo e Movimentações Recentes -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; margin-bottom: 16px;">
+            <!-- Gráfico SVG de Fluxo por Faixa Horária -->
             <div class="chart-card-wrapper">
               <div class="chart-header">
                 <div>
-                  <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-main);">Fluxo de Movimentações (Hoje)</h3>
-                  <p style="font-size: 0.75rem; color: var(--text-muted);">Volume de entradas e saídas distribuídas por faixa horária</p>
+                  <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary);">Fluxo de Movimentações Horárias</h3>
+                  <p style="font-size: 0.6875rem; color: var(--text-muted);">Volume de operações consolidadas no turno atual</p>
                 </div>
-                <span class="badge badge-outline">Gráfico SVG Nativo</span>
+                <span class="badge badge-outline">Tempo Real</span>
               </div>
               <div class="chart-svg-container" id="dash-chart-container">
-                <!-- Injetado dinamicamente via dashboard.js -->
+                <!-- SVG renderizado via dashboard.js -->
               </div>
             </div>
 
@@ -219,10 +231,10 @@
             <div class="card" style="margin-bottom: 0;">
               <div class="card-header">
                 <h3>
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
-                  Movimentações Recentes
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                  Últimas Atividades no Pátio
                 </h3>
-                <button type="button" class="btn btn-outline btn-sm" data-goto-view="parked">Ver Todas</button>
+                <button type="button" class="btn btn-outline btn-sm" data-goto-view="parked">Ver Todos</button>
               </div>
               <div class="table-responsive">
                 <table class="data-table">
@@ -231,8 +243,8 @@
                       <th>Placa</th>
                       <th>Tipo</th>
                       <th>Horário</th>
-                      <th>Status</th>
-                      <th>Ação / Valor</th>
+                      <th>Estado</th>
+                      <th>Operação</th>
                     </tr>
                   </thead>
                   <tbody id="dash-recent-tbody">
@@ -248,25 +260,25 @@
              Tela 2 — Entrada de Veículos
              ================================================================ -->
         <article id="view-entry" class="app-view">
-          <div style="max-width: 760px; margin: 0 auto;">
+          <div style="max-width: 680px; margin: 0 auto;">
             <div class="card">
               <div class="card-header">
                 <div>
-                  <h3>Registrar Entrada de Veículo</h3>
-                  <p>Informe a placa e categoria para emitir o tíquete e alocar a vaga</p>
+                  <h3>Registro de Entrada de Veículo</h3>
+                  <p>Alocação de vaga e emissão do comprovante de ingresso</p>
                 </div>
-                <span class="badge badge-outline">RN001 • RN002 • RN013</span>
+                <span class="badge badge-outline">Controle de Lotação Ativo</span>
               </div>
               <form id="form-entry" novalidate>
                 <div class="card-body">
-                  <!-- Seletor de Categoria (Carro ou Moto) -->
+                  <!-- Seletor Segmentado de Categoria -->
                   <div class="form-group">
                     <label class="form-label">Categoria do Veículo <span class="required">*</span></label>
                     <div class="vehicle-selector-grid">
                       <div class="vehicle-type-card selected" data-type="car">
                         <input type="radio" name="entry-vehicle-type" id="type-car" value="car" checked>
                         <div class="vehicle-type-icon">
-                          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="9" rx="2"></rect><path d="M5 11l2-6h10l2 6"></path><circle cx="7.5" cy="16.5" r="1.5"></circle><circle cx="16.5" cy="16.5" r="1.5"></circle></svg>
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="9" rx="2"></rect><path d="M5 11l2-6h10l2 6"></path><circle cx="7.5" cy="16.5" r="1.5"></circle><circle cx="16.5" cy="16.5" r="1.5"></circle></svg>
                         </div>
                         <div class="vehicle-type-info">
                           <h4>Automóvel / Carro</h4>
@@ -277,7 +289,7 @@
                       <div class="vehicle-type-card" data-type="moto">
                         <input type="radio" name="entry-vehicle-type" id="type-moto" value="moto">
                         <div class="vehicle-type-icon">
-                          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="16" r="3"></circle><circle cx="19" cy="16" r="3"></circle><path d="M5 16h3l3-7h4l2 3h2"></path><line x1="12" y1="9" x2="12" y2="5"></line><line x1="10" y1="5" x2="14" y2="5"></line></svg>
+                          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="16" r="3"></circle><circle cx="19" cy="16" r="3"></circle><path d="M5 16h3l3-7h4l2 3h2"></path><line x1="12" y1="9" x2="12" y2="5"></line><line x1="10" y1="5" x2="14" y2="5"></line></svg>
                         </div>
                         <div class="vehicle-type-info">
                           <h4>Motocicleta / Moto</h4>
@@ -290,24 +302,24 @@
                   <!-- Campo de Placa -->
                   <div class="form-group">
                     <label class="form-label" for="entry-plate">
-                      Placa do Veículo <span class="required">*</span>
-                      <span style="font-weight: normal; font-size: 12px; color: var(--text-muted);">Padrão Tradicional (AAA-1234) ou Mercosul (AAA1B23)</span>
+                      Placa Automotiva <span class="required">*</span>
+                      <span style="font-weight: 500; font-size: 11px; color: var(--text-muted); text-transform: none;">Padrão Mercosul (BRA2E19) ou Tradicional (ABC-1234)</span>
                     </label>
                     <input type="text" id="entry-plate" class="form-control plate-input" placeholder="ABC1D23" maxlength="8" autocomplete="off" required>
-                    <div class="form-hint">Letras são convertidas automaticamente para maiúsculas (RN013).</div>
+                    <div class="form-hint">Letras convertidas automaticamente para maiúsculas e sanitizadas.</div>
                   </div>
 
-                  <!-- Campos Complementares -->
+                  <!-- Campos Adicionais -->
                   <div class="form-grid">
                     <div class="form-group">
-                      <label class="form-label" for="entry-driver">Nome do Condutor / Responsável (Opcional)</label>
-                      <input type="text" id="entry-driver" class="form-control" placeholder="Ex: Maria Oliveira">
+                      <label class="form-label" for="entry-driver">Nome do Condutor (Opcional)</label>
+                      <input type="text" id="entry-driver" class="form-control" placeholder="Identificação do motorista">
                     </div>
 
                     <div class="form-group">
-                      <label class="form-label" for="entry-time">Data e Horário de Entrada <span class="required">*</span></label>
+                      <label class="form-label" for="entry-time">Data e Horário de Ingresso <span class="required">*</span></label>
                       <input type="datetime-local" id="entry-time" class="form-control" required>
-                      <div class="form-hint">Preenchido com o momento presente; editável se necessário.</div>
+                      <div class="form-hint">Sincronizado com o relógio do sistema.</div>
                     </div>
                   </div>
                 </div>
@@ -316,7 +328,7 @@
                   <button type="button" class="btn btn-secondary" data-goto-view="dashboard">Cancelar</button>
                   <button type="submit" class="btn btn-primary btn-lg" id="btn-submit-entry">
                     <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"></path></svg>
-                    Confirmar Entrada do Veículo
+                    Confirmar Entrada
                   </button>
                 </div>
               </form>
@@ -325,31 +337,31 @@
         </article>
 
         <!-- ================================================================
-             Tela 3 — Veículos Estacionados
+             Tela 3 — Veículos Estacionados (Pátio Ativo)
              ================================================================ -->
         <article id="view-parked" class="app-view">
           <div class="card">
             <div class="card-header">
               <div>
-                <h3>Veículos Atualmente no Pátio</h3>
-                <p>Controle dinâmico de estadias ativas com tempo e tarifa recalculados em tempo real</p>
+                <h3>Veículos no Pátio em Tempo Real</h3>
+                <p>Monitoramento contínuo de permanência e valores parciais acumulados</p>
               </div>
               <div style="display: flex; gap: 8px; align-items: center;">
                 <span class="badge badge-success" id="parked-filtered-count">0 veículo(s)</span>
-                <button type="button" class="btn btn-primary btn-sm" data-goto-view="entry">+ Entrada</button>
+                <button type="button" class="btn btn-primary btn-sm" data-goto-view="entry">+ Nova Entrada</button>
               </div>
             </div>
 
             <!-- Filtros de Busca -->
-            <div style="padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--color-border); display: flex; gap: 12px; flex-wrap: wrap; background-color: #FAFAFA;">
-              <div style="flex: 1; min-width: 240px;">
-                <input type="text" id="parked-search" class="form-control" placeholder="🔍 Pesquisar por placa, condutor ou tíquete...">
+            <div style="padding: 10px 18px; border-bottom: 1px solid var(--color-border); display: flex; gap: 10px; flex-wrap: wrap; background-color: #0E1626;">
+              <div style="flex: 1; min-width: 220px;">
+                <input type="text" id="parked-search" class="form-control" placeholder="🔍 Filtrar por placa, condutor ou tíquete...">
               </div>
-              <div style="width: 180px;">
+              <div style="width: 170px;">
                 <select id="parked-type-filter" class="form-select">
-                  <option value="all">Todos os Tipos</option>
-                  <option value="car">Apenas Carros</option>
-                  <option value="moto">Apenas Motos</option>
+                  <option value="all">Todas as Categorias</option>
+                  <option value="car">Apenas Automóveis</option>
+                  <option value="moto">Apenas Motocicletas</option>
                 </select>
               </div>
             </div>
@@ -361,14 +373,14 @@
                     <th>Identificador</th>
                     <th>Placa</th>
                     <th>Tipo</th>
-                    <th>Horário Entrada</th>
-                    <th>Permanência</th>
-                    <th>Valor Estimado</th>
-                    <th>Ações</th>
+                    <th>Horário Ingresso</th>
+                    <th>Duração</th>
+                    <th>Tarifa Estimada</th>
+                    <th>Ações Operacionais</th>
                   </tr>
                 </thead>
                 <tbody id="parked-tbody">
-                  <!-- Injetado dinamicamente via vehicles.js / app.js -->
+                  <!-- Injetado dinamicamente -->
                 </tbody>
               </table>
             </div>
@@ -382,26 +394,26 @@
           <div class="card">
             <div class="card-header">
               <div>
-                <h3>Histórico de Permanências Concluídas</h3>
-                <p>Registro imutável para prestação de contas, auditoria e conciliação operacional</p>
+                <h3>Auditoria de Permanências Concluídas</h3>
+                <p>Livro de registros históricos imutáveis de saídas e fechamentos</p>
               </div>
               <div style="display: flex; gap: 8px;">
                 <button type="button" class="btn btn-success btn-sm" id="history-export-csv">
                   <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                  Exportar CSV
+                  Exportar Dados (CSV)
                 </button>
               </div>
             </div>
 
             <!-- Barra de Filtros Multicritério -->
-            <div style="padding: var(--spacing-md) var(--spacing-lg); border-bottom: 1px solid var(--color-border); background-color: #FAFAFA;">
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 10px; align-items: end;">
+            <div style="padding: 12px 18px; border-bottom: 1px solid var(--color-border); background-color: #0E1626;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) auto; gap: 10px; align-items: end;">
                 <div class="form-group" style="margin: 0;">
-                  <label class="form-label" style="font-size: 11px;">Buscar Placa / Condutor</label>
-                  <input type="text" id="history-search" class="form-control form-control-sm" placeholder="Ex: BRA2E19">
+                  <label class="form-label" style="font-size: 10px;">Buscar Placa</label>
+                  <input type="text" id="history-search" class="form-control" placeholder="Ex: BRA2E19">
                 </div>
                 <div class="form-group" style="margin: 0;">
-                  <label class="form-label" style="font-size: 11px;">Categoria</label>
+                  <label class="form-label" style="font-size: 10px;">Categoria</label>
                   <select id="history-type-filter" class="form-select">
                     <option value="all">Todas</option>
                     <option value="car">Carro</option>
@@ -409,12 +421,12 @@
                   </select>
                 </div>
                 <div class="form-group" style="margin: 0;">
-                  <label class="form-label" style="font-size: 11px;">Data Início</label>
-                  <input type="date" id="history-start-date" class="form-control form-control-sm">
+                  <label class="form-label" style="font-size: 10px;">Data Inicial</label>
+                  <input type="date" id="history-start-date" class="form-control">
                 </div>
                 <div class="form-group" style="margin: 0;">
-                  <label class="form-label" style="font-size: 11px;">Data Fim</label>
-                  <input type="date" id="history-end-date" class="form-control form-control-sm">
+                  <label class="form-label" style="font-size: 10px;">Data Final</label>
+                  <input type="date" id="history-end-date" class="form-control">
                 </div>
                 <div style="display: flex; gap: 6px;">
                   <button type="button" class="btn btn-secondary btn-sm" id="history-clear-filters">Limpar</button>
@@ -428,22 +440,22 @@
                   <tr>
                     <th>Placa</th>
                     <th>Tipo</th>
-                    <th>Entrada</th>
+                    <th>Ingresso</th>
                     <th>Saída</th>
-                    <th>Duração</th>
-                    <th>Valor Cobrado</th>
-                    <th>Pagamento</th>
+                    <th>Permanência</th>
+                    <th>Valor Liquidado</th>
+                    <th>Meio Pagamento</th>
                     <th>Ação</th>
                   </tr>
                 </thead>
                 <tbody id="history-tbody">
-                  <!-- Preenchido dinamicamente -->
+                  <!-- Injetado dinamicamente -->
                 </tbody>
               </table>
             </div>
             <div class="card-footer" style="justify-content: space-between;">
-              <span id="history-filtered-count" style="font-size: 12px; color: var(--text-muted);">0 movimentação(ões)</span>
-              <span style="font-size: 12px; color: var(--text-muted);">Compatível com Excel (BOM UTF-8)</span>
+              <span id="history-filtered-count" style="font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);">0 registros listados</span>
+              <span style="font-size: 11px; color: var(--text-subtle);">Padrão de exportação: UTF-8 com BOM (Excel)</span>
             </div>
           </div>
         </article>
@@ -452,14 +464,14 @@
              Tela 6 — Módulo Financeiro
              ================================================================ -->
         <article id="view-finance" class="app-view">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-lg); flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
             <div>
-              <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main);">Auditoria Financeira e Faturamento</h3>
-              <p style="font-size: 0.85rem; color: var(--text-muted);">Apenas pagamentos confirmados integram os valores realizados (RN010)</p>
+              <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary);">Controle de Arrecadação e Conciliação</h3>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Totalização consolidada estritamente com base em saídas confirmadas</p>
             </div>
-            <!-- Seletor de Período -->
-            <div style="display: flex; gap: 6px; background: #E2E8F0; padding: 4px; border-radius: var(--radius-md);">
-              <button type="button" class="btn btn-primary btn-sm finance-period-btn" data-period="all">Todo Histórico</button>
+            <!-- Seletor de Período Sóbrio -->
+            <div style="display: flex; gap: 4px; background: #0E1626; padding: 3px; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+              <button type="button" class="btn btn-primary btn-sm finance-period-btn" data-period="all">Histórico Completo</button>
               <button type="button" class="btn btn-secondary btn-sm finance-period-btn" data-period="today">Hoje</button>
               <button type="button" class="btn btn-secondary btn-sm finance-period-btn" data-period="7days">Últimos 7 Dias</button>
               <button type="button" class="btn btn-secondary btn-sm finance-period-btn" data-period="month">Este Mês</button>
@@ -477,34 +489,34 @@
               </div>
               <div class="kpi-value" id="fin-total-revenue" style="color: var(--color-success);">R$ 0,00</div>
               <div class="kpi-footer">
-                <span>Receita líquida realizada</span>
+                <span>Receita Líquida</span>
                 <span class="badge badge-success">Confirmado</span>
               </div>
             </div>
 
             <div class="kpi-card">
               <div class="kpi-header">
-                <span class="kpi-title">Faturamento do Dia</span>
+                <span class="kpi-title">Receita do Dia</span>
                 <div class="kpi-icon blue">
                   <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 </div>
               </div>
               <div class="kpi-value" id="fin-today-revenue">R$ 0,00</div>
               <div class="kpi-footer">
-                <span>Data corrente</span>
+                <span>Data Corrente</span>
               </div>
             </div>
 
             <div class="kpi-card">
               <div class="kpi-header">
-                <span class="kpi-title">Volume de Pagamentos</span>
+                <span class="kpi-title">Tíquetes Faturados</span>
                 <div class="kpi-icon amber">
                   <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                 </div>
               </div>
               <div class="kpi-value" id="fin-payments-count">0</div>
               <div class="kpi-footer">
-                <span>Tíquetes liquidados</span>
+                <span>Operações Fechadas</span>
               </div>
             </div>
 
@@ -517,38 +529,38 @@
               </div>
               <div class="kpi-value" id="fin-average-ticket">R$ 0,00</div>
               <div class="kpi-footer">
-                <span>Média por estadia paga</span>
+                <span>Média / Estadia</span>
               </div>
             </div>
           </div>
 
           <!-- Gráfico de Meios de Pagamento e Extrato -->
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: var(--spacing-lg);">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 16px;">
             <div class="chart-card-wrapper">
               <div class="chart-header">
                 <div>
-                  <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-main);">Receita por Meio de Pagamento</h3>
-                  <p style="font-size: 0.75rem; color: var(--text-muted);">Composição percentual (Pix, Cartão e Dinheiro)</p>
+                  <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary);">Composição por Meio de Pagamento</h3>
+                  <p style="font-size: 0.6875rem; color: var(--text-muted);">Divisão percentual e monetária por canal</p>
                 </div>
               </div>
               <div id="fin-payment-distribution-chart">
-                <!-- Injetado dinamicamente -->
+                <!-- SVG Donut Chart renderizado via dashboard.js -->
               </div>
             </div>
 
             <div class="card" style="margin-bottom: 0;">
               <div class="card-header">
-                <h3>Extrato de Lançamentos</h3>
-                <span class="badge badge-outline">RN010</span>
+                <h3>Extrato de Lançamentos Recentes</h3>
+                <span class="badge badge-outline">Conciliado</span>
               </div>
-              <div class="table-responsive" style="max-height: 280px;">
+              <div class="table-responsive" style="max-height: 270px;">
                 <table class="data-table">
                   <thead>
                     <tr>
                       <th>Horário</th>
                       <th>Tíquete</th>
                       <th>Placa</th>
-                      <th>Método</th>
+                      <th>Canal</th>
                       <th>Duração</th>
                       <th>Valor</th>
                     </tr>
@@ -563,31 +575,31 @@
         </article>
 
         <!-- ================================================================
-             Tela 7 — Configurações
+             Tela 7 — Configurações / Parâmetros
              ================================================================ -->
         <article id="view-settings" class="app-view">
-          <div style="max-width: 800px; margin: 0 auto;">
+          <div style="max-width: 740px; margin: 0 auto;">
             <div class="card">
               <div class="card-header">
                 <div>
-                  <h3>Parâmetros Operacionais do Estacionamento</h3>
-                  <p>Defina capacidades, tarifas, regras de tolerância e frações adicionais</p>
+                  <h3>Parâmetros Operacionais e Tarifários</h3>
+                  <p>Configuração de capacidades físicas, tabela de preços e tempos regulamentares</p>
                 </div>
-                <span class="badge badge-outline">RN014 • RN015 • RN017</span>
+                <span class="badge badge-outline">Configuração Segura</span>
               </div>
               <form id="form-settings" novalidate>
                 <div class="card-body">
                   <div class="form-group">
-                    <label class="form-label" for="setting-parking-name">Nome Fantasia do Estabelecimento <span class="required">*</span></label>
+                    <label class="form-label" for="setting-parking-name">Nome Fantasia da Unidade <span class="required">*</span></label>
                     <input type="text" id="setting-parking-name" class="form-control" required>
-                    <div class="form-hint">Apresentado nos cabeçalhos e emitido nos comprovantes térmicos.</div>
+                    <div class="form-hint">Emitido nos tíquetes de cancela e recibos finais.</div>
                   </div>
 
                   <!-- Seção de Vagas e Capacidades -->
-                  <h4 style="font-size: 0.95rem; font-weight: 700; margin: 20px 0 10px 0; color: var(--text-main); border-bottom: 1px solid var(--color-border); padding-bottom: 6px;">
+                  <h4 style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 18px 0 8px 0; color: var(--text-muted); border-bottom: 1px solid var(--color-border); padding-bottom: 4px;">
                     1. Capacidade Física de Vagas
                   </h4>
-                  <div id="settings-current-occupancy-info" style="font-size: 12px; color: var(--color-primary); background: var(--color-primary-light); padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 12px;">
+                  <div id="settings-current-occupancy-info" style="font-size: 11px; color: #60A5FA; background: #0E1A2E; border: 1px solid #1E3A5F; padding: 7px 10px; border-radius: var(--radius-sm); margin-bottom: 12px; font-family: var(--font-mono);">
                     Carregando ocupação...
                   </div>
 
@@ -595,19 +607,19 @@
                     <div class="form-group">
                       <label class="form-label" for="setting-car-spots">Vagas para Automóveis (Carros) <span class="required">*</span></label>
                       <input type="number" id="setting-car-spots" class="form-control" min="1" required>
-                      <div class="form-hint">Não pode ser menor que os carros estacionados (RN015).</div>
+                      <div class="form-hint">Bloqueia reduções abaixo dos carros no pátio.</div>
                     </div>
 
                     <div class="form-group">
                       <label class="form-label" for="setting-moto-spots">Vagas para Motocicletas (Motos) <span class="required">*</span></label>
                       <input type="number" id="setting-moto-spots" class="form-control" min="1" required>
-                      <div class="form-hint">Não pode ser menor que as motos estacionadas (RN015).</div>
+                      <div class="form-hint">Bloqueia reduções abaixo das motos no pátio.</div>
                     </div>
                   </div>
 
                   <!-- Seção de Tarifas -->
-                  <h4 style="font-size: 0.95rem; font-weight: 700; margin: 20px 0 10px 0; color: var(--text-main); border-bottom: 1px solid var(--color-border); padding-bottom: 6px;">
-                    2. Tabela Tarifária e Prazos
+                  <h4 style="font-size: 0.8125rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 18px 0 8px 0; color: var(--text-muted); border-bottom: 1px solid var(--color-border); padding-bottom: 4px;">
+                    2. Tarifação e Tolerâncias
                   </h4>
                   <div class="form-grid">
                     <div class="form-group">
@@ -623,25 +635,25 @@
                     <div class="form-group">
                       <label class="form-label" for="setting-tolerance">Tolerância Gratuita (Minutos) <span class="required">*</span></label>
                       <input type="number" id="setting-tolerance" class="form-control" min="0" required>
-                      <div class="form-hint">Padrão: 10 minutos (RN007). Estadias até este tempo pagam R$ 0,00.</div>
+                      <div class="form-hint">Permanências até este tempo pagam R$ 0,00.</div>
                     </div>
 
                     <div class="form-group">
                       <label class="form-label" for="setting-fraction">Fração Adicional (Minutos) <span class="required">*</span></label>
                       <input type="number" id="setting-fraction" class="form-control" min="1" required>
-                      <div class="form-hint">Padrão: 15 minutos (RN009), cobrada a 25% da hora cheia.</div>
+                      <div class="form-hint">Cobrada a 25% da hora cheia por fração iniciada.</div>
                     </div>
                   </div>
 
-                  <div style="background-color: #FEF3C7; border: 1px solid #FDE68A; padding: 12px; border-radius: var(--radius-sm); font-size: 12px; color: #92400E; margin-top: 14px;">
-                    <strong>Regra de Irretroatividade (RN017):</strong> Alterações nestes valores vigoram exclusivamente para novas entradas. Veículos já estacionados mantêm o valor da tarifa fixado no momento do ingresso.
+                  <div style="background-color: #1A170F; border: 1px solid #4D3817; padding: 10px; border-radius: var(--radius-sm); font-size: 11px; color: #FBBF24; margin-top: 12px;">
+                    <strong>Regra de Irretroatividade:</strong> As alterações tarifárias passam a vigorar exclusivamente para novas entradas. Permanências já iniciadas preservam o valor da tabela cadastrada na entrada.
                   </div>
                 </div>
 
                 <div class="card-footer">
                   <button type="submit" class="btn btn-primary btn-lg">
                     <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                    Salvar Parâmetros Operacionais
+                    Salvar Parâmetros
                   </button>
                 </div>
               </form>
@@ -652,23 +664,24 @@
       </section>
 
       <!-- ====================================================================
-           Rodapé com Créditos Acadêmicos Oficiais
+           Rodapé Sóbrio da Aplicação
            ==================================================================== -->
       <footer class="app-footer">
-        <p>Desenvolvido por João Pedro Ribas da Silva e Nicolas Ferreira Souza | ADS Noite — FATEC Carapicuíba | 2026</p>
+        <p>ParkControl Enterprise • Console de Gerenciamento Operacional</p>
+        <span style="font-family: var(--font-mono);">Terminal Ativo • Localhost</span>
       </footer>
     </main>
   </div>
 
   <!-- ======================================================================
-       Tela 4 — Modal de Saída e Pagamento (Checkout)
+       Tela 4 — Modal de Saída e Checkout Financeiro
        ====================================================================== -->
   <div class="modal-backdrop" id="modal-checkout" role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title">
     <div class="modal-dialog">
       <div class="modal-header">
         <div>
-          <h3 id="checkout-modal-title">Registrar Saída e Pagamento</h3>
-          <p style="font-size: 12px; color: var(--text-muted);">Confira a memória de cálculo e confirme a liquidação para liberar a vaga</p>
+          <h3 id="checkout-modal-title">Checkout de Saída e Liquidação</h3>
+          <p style="font-size: 11px; color: var(--text-muted);">Conferência da memória de cálculo e encerramento da permanência</p>
         </div>
         <button type="button" class="modal-close-btn" id="checkout-modal-close" aria-label="Fechar">✕</button>
       </div>
@@ -677,46 +690,46 @@
         <!-- Resumo da Estadia -->
         <div class="checkout-summary-box">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span class="plate-badge" id="checkout-plate-display" style="font-size: 1.15rem;">ABC1D23</span>
+            <span class="plate-badge" id="checkout-plate-display" style="font-size: 1.05rem;">ABC1D23</span>
             <span class="badge badge-car" id="checkout-type-badge">Carro</span>
           </div>
           <div class="checkout-row">
-            <span>Tíquete:</span>
-            <strong id="checkout-ticket-id">-</strong>
+            <span>Identificador:</span>
+            <strong id="checkout-ticket-id" style="font-family: var(--font-mono);">-</strong>
           </div>
           <div class="checkout-row">
-            <span>Data / Horário de Entrada:</span>
+            <span>Ingresso:</span>
             <span id="checkout-entry-time">-</span>
           </div>
           <div class="checkout-row">
-            <span>Data / Horário de Saída:</span>
+            <span>Saída:</span>
             <span id="checkout-exit-time">-</span>
           </div>
           <div class="checkout-row">
-            <span>Tempo Total de Permanência:</span>
-            <strong id="checkout-duration" style="color: var(--color-primary);">-</strong>
+            <span>Duração Total:</span>
+            <strong id="checkout-duration" style="color: #60A5FA; font-family: var(--font-mono);">-</strong>
           </div>
-          <div class="checkout-row" style="background: #F1F5F9; padding: 8px; border-radius: 4px; margin-top: 6px;">
-            <span style="font-size: 12px; color: var(--text-muted);">Memória de Cálculo:</span>
-            <span id="checkout-memory-summary" style="font-size: 12px; font-weight: 600; text-align: right; max-width: 65%;">-</span>
+          <div class="checkout-row" style="background: #090F1C; padding: 6px 8px; border-radius: 4px; margin-top: 6px;">
+            <span style="font-size: 11px; color: var(--text-muted);">Memória de Cálculo:</span>
+            <span id="checkout-memory-summary" style="font-size: 11px; font-weight: 500; text-align: right; max-width: 65%; color: #CBD5E1;">-</span>
           </div>
           <div class="checkout-row total">
-            <span>Total a Pagar:</span>
+            <span>Valor Total Devido:</span>
             <span class="price-highlight" id="checkout-total-price">R$ 0,00</span>
           </div>
         </div>
 
-        <!-- Seleção da Forma de Pagamento (RN016) -->
+        <!-- Seleção do Meio de Pagamento -->
         <div class="form-group">
-          <label class="form-label">Forma de Pagamento <span class="required">*</span></label>
+          <label class="form-label">Meio de Pagamento <span class="required">*</span></label>
           <div class="payment-methods-grid">
             <button type="button" class="payment-method-btn selected" data-method="pix">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-              <span>Pix (Instantâneo)</span>
+              <span>Pix Instantâneo</span>
             </button>
             <button type="button" class="payment-method-btn" data-method="money">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle></svg>
-              <span>Dinheiro</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="2" r="2"></circle></svg>
+              <span>Dinheiro em Espécie</span>
             </button>
             <button type="button" class="payment-method-btn" data-method="debit">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
@@ -729,20 +742,20 @@
           </div>
         </div>
 
-        <!-- Seção Dinâmica para Dinheiro (Troco) -->
-        <div id="checkout-cash-container" style="display: none; background: #F8FAFC; border: 1px solid var(--color-border); padding: 12px; border-radius: var(--radius-md); margin-bottom: 12px;">
-          <div class="form-group" style="margin-bottom: 6px;">
-            <label class="form-label" for="checkout-cash-received">Valor Entregue pelo Cliente (R$)</label>
+        <!-- Seção de Troco para Dinheiro -->
+        <div id="checkout-cash-container" style="display: none; background: #0E1626; border: 1px solid var(--color-border); padding: 10px; border-radius: var(--radius-md); margin-bottom: 10px;">
+          <div class="form-group" style="margin-bottom: 4px;">
+            <label class="form-label" for="checkout-cash-received">Valor Recebido (R$)</label>
             <input type="number" id="checkout-cash-received" class="form-control" step="1.00" min="0" placeholder="Ex: 50.00">
           </div>
-          <div id="checkout-change-display" style="font-size: 13px; font-weight: 700; margin-top: 6px;">
-            Informe o valor entregue.
+          <div id="checkout-change-display" style="font-size: 12px; font-weight: 600; margin-top: 4px; font-family: var(--font-mono);">
+            Informe o valor entregue pelo cliente.
           </div>
         </div>
 
-        <!-- Seção Demonstrativa Pix -->
-        <div id="checkout-pix-container" style="background: #F0FDF4; border: 1px solid #BBF7D0; padding: 10px; border-radius: var(--radius-md); font-size: 12px; color: #166534; text-align: center;">
-          ✓ Pagamento Pix Demonstrativo pronto para confirmação imediata.
+        <!-- Seção Pix -->
+        <div id="checkout-pix-container" style="background: #0D281E; border: 1px solid #134E39; padding: 8px 12px; border-radius: var(--radius-md); font-size: 11px; color: #34D399; text-align: center;">
+          ✓ Pagamento Pix demonstrativo pronto para quitação imediata.
         </div>
       </div>
 
@@ -750,7 +763,7 @@
         <button type="button" class="btn btn-secondary" id="checkout-cancel-btn">Cancelar</button>
         <button type="button" class="btn btn-success btn-lg" id="checkout-confirm-btn">
           <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          Confirmar Pagamento e Liberar Saída
+          Confirmar Pagamento e Liberar Vaga
         </button>
       </div>
     </div>
@@ -762,22 +775,22 @@
   <div class="modal-backdrop" id="modal-entry-ticket" role="dialog" aria-modal="true">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3>Tíquete de Entrada</h3>
+        <h3>Tíquete de Ingresso</h3>
         <button type="button" class="modal-close-btn" id="entry-ticket-close">✕</button>
       </div>
       <div class="modal-body">
         <div class="receipt-paper receipt-printable">
           <div class="receipt-header">
             <h4 id="ticket-est-name">ParkControl</h4>
-            <div style="font-size: 0.8rem;">COMPROVANTE DE ENTRADA</div>
-            <div style="font-size: 0.75rem; color: #64748B;" id="ticket-id-display">PK-00000</div>
+            <div style="font-size: 0.75rem; letter-spacing: 0.05em; margin-top: 2px;">CONTROLE DE ENTRADA</div>
+            <div style="font-size: 0.6875rem; color: #94A3B8; margin-top: 2px;" id="ticket-id-display">PK-00000</div>
           </div>
           <div class="receipt-line">
             <span>PLACA:</span>
             <strong id="ticket-plate-display">-</strong>
           </div>
           <div class="receipt-line">
-            <span>TIPO:</span>
+            <span>CATEGORIA:</span>
             <span id="ticket-type-display">-</span>
           </div>
           <div class="receipt-line">
@@ -785,15 +798,15 @@
             <span id="ticket-driver-display">-</span>
           </div>
           <div class="receipt-line">
-            <span>ENTRADA:</span>
+            <span>INGRESSO:</span>
             <strong id="ticket-entry-time-display">-</strong>
           </div>
           <div class="receipt-divider"></div>
-          <div style="font-size: 0.75rem; text-align: center;" id="ticket-rules-display">
+          <div style="font-size: 0.6875rem; text-align: center; color: #94A3B8;" id="ticket-rules-display">
             Tolerância: 10 min | 1ª Hora: R$ 10,00 | Fração 15 min: R$ 2,50
           </div>
           <div class="receipt-footer">
-            Guarde este tíquete. Apresente-o na saída para pagamento.
+            Apresente este comprovante ao operador para encerramento de permanência.
           </div>
         </div>
       </div>
@@ -812,15 +825,15 @@
   <div class="modal-backdrop" id="modal-receipt" role="dialog" aria-modal="true">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3>Recibo de Pagamento</h3>
+        <h3>Comprovante de Pagamento</h3>
         <button type="button" class="modal-close-btn" id="receipt-modal-close">✕</button>
       </div>
       <div class="modal-body">
         <div class="receipt-paper receipt-printable">
           <div class="receipt-header">
             <h4 id="receipt-est-name">ParkControl</h4>
-            <div style="font-size: 0.8rem;">RECIBO DE PAGAMENTO DE ESTACIONAMENTO</div>
-            <div style="font-size: 0.75rem; color: #64748B;" id="receipt-id-display">PK-00000</div>
+            <div style="font-size: 0.75rem; letter-spacing: 0.05em; margin-top: 2px;">RECIBO FISCAL DE ESTACIONAMENTO</div>
+            <div style="font-size: 0.6875rem; color: #94A3B8; margin-top: 2px;" id="receipt-id-display">PK-00000</div>
           </div>
           <div class="receipt-line">
             <span>PLACA:</span>
@@ -831,7 +844,7 @@
             <span id="receipt-type-display">-</span>
           </div>
           <div class="receipt-line">
-            <span>ENTRADA:</span>
+            <span>INGRESSO:</span>
             <span id="receipt-entry-display">-</span>
           </div>
           <div class="receipt-line">
@@ -843,19 +856,19 @@
             <strong id="receipt-duration-display">-</strong>
           </div>
           <div class="receipt-divider"></div>
-          <div style="font-size: 0.75rem; margin-bottom: 6px;" id="receipt-memory-display">
+          <div style="font-size: 0.6875rem; margin-bottom: 6px; color: #94A3B8;" id="receipt-memory-display">
             Memória de cálculo
           </div>
           <div class="receipt-line">
-            <span>FORMA DE PAGAMENTO:</span>
+            <span>CANAL:</span>
             <strong id="receipt-method-display">-</strong>
           </div>
           <div class="receipt-total">
-            <span>VALOR PAGO:</span>
+            <span>VALOR TOTAL PAGO:</span>
             <span id="receipt-total-display">R$ 0,00</span>
           </div>
           <div class="receipt-footer">
-            Volte sempre! | Sistema ParkControl — FATEC Carapicuíba 2026
+            ParkControl Enterprise • Comprovante de Pagamento
           </div>
         </div>
       </div>
@@ -868,11 +881,10 @@
     </div>
   </div>
 
-  <!-- Contêiner de Notificações Toast Flutuantes -->
+  <!-- Contêiner de Notificações Flutuantes -->
   <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
   <!-- Script Principal da Aplicação (Módulos ES Nativos) -->
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
-
