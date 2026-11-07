@@ -358,12 +358,12 @@
                       <dd class="mono" id="entry-side-moto-rate">R$ 5,00</dd>
                     </div>
                     <div class="kv-row">
-                      <dt>Hora adicional</dt>
-                      <dd class="mono" id="entry-side-fraction">50% da 1ª hora</dd>
+                      <dt>Fração adicional</dt>
+                      <dd class="mono" id="entry-side-fraction">15 min (25%)</dd>
                     </div>
                     <div class="kv-row">
                       <dt>Tolerância</dt>
-                      <dd class="mono" id="entry-side-tolerance">15 min</dd>
+                      <dd class="mono" id="entry-side-tolerance">10 min</dd>
                     </div>
                   </dl>
                 </div>
@@ -524,7 +524,7 @@
             <div class="segmented-control" role="group" aria-label="Período de apuração">
               <button type="button" class="segmented-btn finance-period-btn active" data-period="all">Todo o período</button>
               <button type="button" class="segmented-btn finance-period-btn" data-period="today">Hoje</button>
-              <button type="button" class="segmented-btn finance-period-btn" data-period="week">7 dias</button>
+              <button type="button" class="segmented-btn finance-period-btn" data-period="7days">7 dias</button>
               <button type="button" class="segmented-btn finance-period-btn" data-period="month">Mês atual</button>
             </div>
           </div>
@@ -654,8 +654,8 @@
                       <input type="number" id="setting-tolerance" class="form-control input-mono" min="0" max="60" required />
                     </div>
                     <div class="form-group">
-                      <label class="form-label" for="setting-fraction">Hora adicional (% da 1ª hora)</label>
-                      <input type="number" id="setting-fraction" class="form-control input-mono" min="10" max="100" required />
+                      <label class="form-label" for="setting-fraction">Fração adicional (minutos)</label>
+                      <input type="number" id="setting-fraction" class="form-control input-mono" min="1" max="60" required />
                     </div>
                   </div>
                 </div>

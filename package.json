@@ -4,6 +4,7 @@
   "description": "Sistema de Controle e Gerenciamento de Estacionamento — FATEC Carapicuíba ADS 2026",
   "type": "module",
   "scripts": {
+    "start": "node server.js",
     "test": "node tests/test-suite.js"
   },
   "keywords": [

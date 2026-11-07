@@ -237,7 +237,9 @@ export function seedDemoData() {
       formattedDuration: '1h 00min',
       totalCharged: 10.00,
       payment: { method: 'pix', methodLabel: 'Pix', amountPaid: 10.00, changeAmount: 0 },
+      calculationMemory: { summary: 'Permanência de 1h 00min. Cobrança da 1ª hora integral (R$ 10,00).' },
       status: 'completed',
+      isDemo: true,
       finalizedAt: minutesAgo(120)
     },
     {
@@ -251,7 +253,9 @@ export function seedDemoData() {
       formattedDuration: '1h 20min',
       totalCharged: 7.50, // 5 + 2*1.25
       payment: { method: 'credit', methodLabel: 'Cartão de Crédito', amountPaid: 7.50, changeAmount: 0 },
+      calculationMemory: { summary: 'Permanência de 1h 20min: 1ª hora (R$ 5,00) + 2 fração(ões) de 15 min (R$ 2,50).' },
       status: 'completed',
+      isDemo: true,
       finalizedAt: minutesAgo(30)
     },
     {
@@ -265,7 +269,9 @@ export function seedDemoData() {
       formattedDuration: '5 min',
       totalCharged: 0.00,
       payment: { method: 'tolerance', methodLabel: 'Isento / Tolerância', amountPaid: 0, changeAmount: 0 },
+      calculationMemory: { summary: 'Permanência de 5 min dentro da tolerância (10 min). Isento de cobrança.' },
       status: 'completed',
+      isDemo: true,
       finalizedAt: minutesAgo(85)
     },
     {
@@ -279,12 +285,27 @@ export function seedDemoData() {
       formattedDuration: '1h 30min',
       totalCharged: 15.00,
       payment: { method: 'money', methodLabel: 'Dinheiro', amountPaid: 20.00, changeAmount: 5.00 },
+      calculationMemory: { summary: 'Permanência de 1h 30min: 1ª hora (R$ 10,00) + 2 fração(ões) de 15 min (R$ 5,00).' },
       status: 'completed',
+      isDemo: true,
       finalizedAt: minutesAgo(150)
     }
   ];
 
-  safeSetJSON(STORAGE_KEYS.ACTIVE, demoActive);
-  safeSetJSON(STORAGE_KEYS.HISTORY, demoHistory);
+  // Preserva registros reais já existentes sem sobrescrevê-los
+  const currentActive = getActiveVehicles().filter(v => !v.isDemo);
+  const activePlates = new Set(currentActive.map(v => v.plate));
+  const mergedActive = [
+    ...currentActive,
+    ...demoActive
+      .filter(d => !activePlates.has(d.plate))
+      .map(d => ({ ...d, isDemo: true }))
+  ];
+
+  const currentHistory = getHistory().filter(h => !h.isDemo);
+  const mergedHistory = [...currentHistory, ...demoHistory];
+
+  safeSetJSON(STORAGE_KEYS.ACTIVE, mergedActive);
+  safeSetJSON(STORAGE_KEYS.HISTORY, mergedHistory);
 }
 

@@ -5,6 +5,10 @@
  * FATEC Carapicuíba — ADS Noite 2026
  */
 
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import {
   isValidPlate,
   normalizePlate,
@@ -18,7 +22,8 @@ import {
   saveSettings,
   getActiveVehicles,
   getHistory,
-  resetAllData
+  resetAllData,
+  seedDemoData
 } from '../js/storage.js';
 
 import {
@@ -28,6 +33,8 @@ import {
 
 import {
   registerVehicleEntry,
+  filterActiveVehicles,
+  findActiveVehicle,
   isPlateActive
 } from '../js/vehicles.js';
 
@@ -49,6 +56,15 @@ import {
 import {
   updateParkingSettings
 } from '../js/settings.js';
+
+import {
+  getDashboardMetrics,
+  renderMovementsChartSVG,
+  renderCategoryBreakdownHTML,
+  renderPaymentDistributionSVG
+} from '../js/dashboard.js';
+
+import * as AppModule from '../js/app.js';
 
 const testResults = [];
 
@@ -418,6 +434,220 @@ runTest('CT15', 'Faturamento confirmado deriva estritamente de pagamentos conclu
   assertEqual(metricsAfterExit.totalRevenue, 10.00, 'Faturamento confirmado deve refletir exclusivamente a saída concluída');
   assertEqual(metricsAfterExit.paymentCount, 1, 'Volume de pagamentos deve ser 1');
   assertEqual(metricsAfterExit.byMethod.pix.total, 10.00, 'Total em Pix deve ser R$ 10,00');
+});
+
+// CT16: Validação de carregamento de módulos ES6 (app.js e dashboard.js) e renderizadores SVG/HTML
+runTest('CT16', 'Integridade de imports/exports ES6 de app.js e dashboard.js', () => {
+  assert(typeof AppModule.initApp === 'function', 'initApp deve ser exportada por js/app.js');
+  assert(typeof AppModule.navigateTo === 'function', 'navigateTo deve ser exportada por js/app.js');
+  assert(typeof AppModule.renderDashboard === 'function', 'renderDashboard deve ser exportada por js/app.js');
+
+  resetAllData();
+  const dashMetrics = getDashboardMetrics();
+  const catHTML = renderCategoryBreakdownHTML(dashMetrics.capacity);
+  assert(catHTML.includes('Carros / Utilitários'), 'Painel de categorias deve renderizar Carros');
+  assert(catHTML.includes('Motocicletas'), 'Painel de categorias deve renderizar Motocicletas');
+  assert(catHTML.includes('C01'), 'Mapa físico de vagas deve renderizar C01');
+
+  const chartSVG = renderMovementsChartSVG(getActiveVehicles(), getHistory());
+  assert(chartSVG.includes('<svg'), 'Gráfico de movimentações deve retornar SVG válido');
+
+  const finMetrics = getFinancialMetrics('all');
+  const distHTML = renderPaymentDistributionSVG(finMetrics.byMethod);
+  assert(distHTML.includes('Pix'), 'Distribuição de pagamentos deve renderizar Pix');
+});
+
+// CT17: Auditoria cruzada de IDs e seletores entre index.html e js/app.js
+runTest('CT17', 'Correspondência de 100% dos IDs DOM entre index.html e js/app.js', () => {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const htmlContent = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf-8');
+  const appJsContent = fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf-8');
+
+  const idRegex = /getElementById\(['"]([^'"]+)['"]\)/g;
+  const dynamicIds = new Set(['dash-empty-new-entry', 'dash-empty-seed']);
+  const missingIds = [];
+
+  let match;
+  while ((match = idRegex.exec(appJsContent)) !== null) {
+    const id = match[1];
+    if (!dynamicIds.has(id) && !htmlContent.includes(`id="${id}"`)) {
+      missingIds.push(id);
+    }
+  }
+
+  assertEqual(missingIds.length, 0, `IDs ausentes no index.html: ${missingIds.join(', ')}`);
+});
+
+// CT18: Fluxo E2E completo de 18 etapas e preservação de dados existentes no seed
+runTest('CT18', 'Fluxo E2E completo (18 etapas) e preservação de dados ao carregar demonstração', () => {
+  resetAllData();
+
+  // 1-3: Dashboard e Configurações de capacidade
+  updateParkingSettings({
+    parkingName: 'ParkControl E2E',
+    totalCarSpots: 15,
+    totalMotoSpots: 5,
+    carHourlyRate: 10.00,
+    motoHourlyRate: 5.00,
+    toleranceMinutes: 10,
+    fractionMinutes: 15
+  });
+
+  const capInitial = getCapacityStatus();
+  assertEqual(capInitial.totalSpots, 20, 'Capacidade total configurada = 20');
+  assertEqual(capInitial.cars.available, 15, '15 vagas de carro disponíveis');
+
+  // 4-5: Registrar entrada de um carro e verificar redução de vagas
+  const entryTime = new Date(Date.now() - 50 * 60 * 1000).toISOString();
+  const ticket = registerVehicleEntry({
+    plate: 'ABC1D23',
+    vehicleType: 'car',
+    driverName: 'Condutor E2E',
+    entryTime
+  });
+  const capAfterEntry = getCapacityStatus();
+  assertEqual(capAfterEntry.cars.available, 14, 'Vagas disponíveis de carro reduzidas para 14');
+
+  // 6-8: Consultar em Estacionados, pesquisar pela placa e conferir cálculo de permanência
+  const foundInParked = filterActiveVehicles('ABC1D23', 'car');
+  assertEqual(foundInParked.length, 1, 'Veículo deve ser localizado na busca de estacionados');
+  const feePreview = calculateParkingFee({
+    entryTime: ticket.entryTime,
+    exitTime: new Date().toISOString(),
+    hourlyRate: ticket.appliedPricing.hourlyRate,
+    toleranceMinutes: ticket.appliedPricing.toleranceMinutes,
+    fractionMinutes: ticket.appliedPricing.fractionMinutes,
+    fractionPercent: ticket.appliedPricing.fractionPercent
+  });
+  assertEqual(feePreview.totalAmount, 10.00, '50 min deve cobrar 1ª hora integral (R$ 10,00)');
+
+  // 9-11: Registrar saída, confirmar pagamento e verificar liberação da vaga
+  const receipt = finalizeVehicleExit({
+    ticketId: ticket.id,
+    paymentMethod: 'pix',
+    exitTime: new Date()
+  });
+  assertEqual(receipt.totalCharged, 10.00, 'Pagamento confirmado de R$ 10,00');
+  const capAfterExit = getCapacityStatus();
+  assertEqual(capAfterExit.cars.available, 15, 'Vaga liberada imediatamente (15 disponíveis)');
+
+  // 12-16: Consultar Histórico, Financeiro, persistência e exportação CSV
+  const histSearch = filterHistory({ query: 'ABC1D23', vehicleType: 'car' });
+  assertEqual(histSearch.length, 1, 'Registro deve constar no Histórico');
+  const fin = getFinancialMetrics('today');
+  assertEqual(fin.totalRevenue, 10.00, 'Financeiro deve contabilizar R$ 10,00');
+  const csv = generateHistoryCSV(histSearch);
+  assert(csv.includes('"ABC1D23"'), 'CSV exportado deve conter o veículo finalizado');
+
+  // Teste adicional: Carregar demonstração preservando veículo ativo do usuário
+  registerVehicleEntry({ plate: 'USR9Z99', vehicleType: 'car', driverName: 'Cliente Real' });
+  seedDemoData();
+  const activeAfterSeed = getActiveVehicles();
+  assert(activeAfterSeed.some(v => v.plate === 'USR9Z99'), 'Dados reais existentes não devem ser apagados pelo seedDemoData');
+  assert(activeAfterSeed.length >= 5, 'Deve combinar veículo do usuário com os 4 veículos de demonstração');
+});
+
+// CT19: Teste das funções de renderização e navegação da camada de UI (js/app.js) com DOM simulado
+runTest('CT19', 'Execução sem exceções de initApp, navigateTo e renderizadores DOM em js/app.js', () => {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const htmlContent = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf-8');
+
+  // Extrai todos os IDs presentes no index.html para criar elementos mockados fiéis
+  const elementsById = {};
+  const idMatches = [...htmlContent.matchAll(/id="([^"]+)"/g)];
+
+  const createMockElement = (id = '') => ({
+    id,
+    value: '',
+    textContent: '',
+    innerHTML: '',
+    disabled: false,
+    checked: id === 'entry-vehicle-type',
+    dataset: {},
+    style: {},
+    classList: {
+      _set: new Set(),
+      add(c) { this._set.add(c); },
+      remove(c) { this._set.delete(c); },
+      toggle(c, force) {
+        if (force === undefined) {
+          if (this._set.has(c)) this._set.delete(c);
+          else this._set.add(c);
+        } else if (force) {
+          this._set.add(c);
+        } else {
+          this._set.delete(c);
+        }
+      },
+      contains(c) { return this._set.has(c); }
+    },
+    addEventListener() {},
+    querySelector() { return createMockElement(); },
+    querySelectorAll() { return []; },
+    closest() { return createMockElement(); },
+    appendChild() {},
+    remove() {}
+  });
+
+  idMatches.forEach(m => {
+    elementsById[m[1]] = createMockElement(m[1]);
+  });
+
+  globalThis.document = {
+    readyState: 'complete',
+    getElementById: (id) => elementsById[id] || null,
+    querySelector: () => createMockElement(),
+    querySelectorAll: () => [],
+    createElement: () => createMockElement(),
+    addEventListener: () => {}
+  };
+  globalThis.window = {
+    confirm: () => true,
+    print: () => {}
+  };
+
+  try {
+    resetAllData();
+    seedDemoData();
+
+    // Executa todas as funções de controle de tela de js/app.js
+    AppModule.updateHeaderStatus();
+    AppModule.renderDashboard();
+    AppModule.renderEntryView();
+    AppModule.renderParkedList();
+    AppModule.renderHistoryList();
+    AppModule.renderFinanceDashboard();
+    AppModule.renderSettingsForm();
+
+    // Testa navegação por todas as 6 telas
+    ['dashboard', 'entry', 'parked', 'history', 'finance', 'settings'].forEach(view => {
+      AppModule.navigateTo(view);
+      assertEqual(elementsById['current-page-title'].textContent.length > 0, true, `Título atualizado para ${view}`);
+    });
+
+    // Verifica que o Dashboard preencheu os elementos DOM com os dados reais do seed
+    assertEqual(elementsById['dash-total-spots'].textContent, 30, 'Capacidade padrão (20+10) renderizada no DOM');
+    assertEqual(elementsById['dash-occupied-spots'].textContent, 4, '4 veículos ativos do seed renderizados no DOM');
+    assert(elementsById['dash-recent-tbody'].innerHTML.includes('BRA2E19'), 'Tabela recente no Dashboard contém placa BRA2E19');
+    assert(elementsById['parked-tbody'].innerHTML.includes('BRA2E19'), 'Tabela do pátio contém placa BRA2E19');
+    assert(elementsById['history-tbody'].innerHTML.includes('XYZ-9876'), 'Tabela de histórico contém placa formatada XYZ-9876');
+    assert(elementsById['fin-transactions-tbody'].innerHTML.includes('XYZ-9876'), 'Tabela financeira contém transação XYZ-9876');
+
+    // Testa abertura de modais de ticket, checkout e recibo
+    const active = getActiveVehicles()[0];
+    AppModule.openEntryTicketModal(active);
+    assert(elementsById['modal-entry-ticket'].classList.contains('open'), 'Modal de ticket deve abrir');
+
+    AppModule.openCheckoutModal(active.id);
+    assert(elementsById['modal-checkout'].classList.contains('open'), 'Modal de checkout deve abrir');
+
+    const histItem = getHistory()[0];
+    AppModule.openReceiptModal(histItem);
+    assert(elementsById['modal-receipt'].classList.contains('open'), 'Modal de recibo deve abrir');
+  } finally {
+    delete globalThis.document;
+    delete globalThis.window;
+  }
 });
 
 console.log('\n================================================================');

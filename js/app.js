@@ -1,31 +1,60 @@
 /**
  * ParkControl — Sistema de Controle e Gerenciamento de Estacionamento
- * js/app.js — Controlador Principal de Interface, Navegação, Eventos e Modais
+ * js/app.js — Orquestrador SPA, Gerenciamento de Eventos, Telas e Modais
  * Autores: João Pedro Ribas da Silva & Nicolas Ferreira Souza
+ * FATEC Carapicuíba — ADS Noite 2026
  */
 
 import {
+  escapeHTML,
+  formatPlate,
+  normalizePlate,
+  formatBRL,
+  formatDateTime,
+  formatTimeOnly,
+  formatDateOnly,
+  formatDuration,
+  calculateMinutesDifference,
+  getLocalDatetimeInputValue
+} from './utils.js';
+
+import {
   getSettings,
-  saveSettings,
   getActiveVehicles,
   getHistory,
-  resetToFactory,
+  resetAllData,
   seedDemoData
 } from './storage.js';
 
 import {
-  registerVehicleEntry,
-  previewVehicleCheckout,
-  completeVehicleCheckout,
-  getCapacityStatus
+  getCapacityStatus,
+  isSlotAvailable
 } from './parking.js';
 
 import {
-  getFinancialMetrics,
-  getPaymentMethodLabel,
-  getFilteredHistory,
-  generateHistoryCSV
+  registerVehicleEntry,
+  filterActiveVehicles,
+  findActiveVehicle
+} from './vehicles.js';
+
+import {
+  calculateParkingFee,
+  calculateCashPayment
+} from './pricing.js';
+
+import {
+  finalizeVehicleExit,
+  filterHistory,
+  downloadCSV
+} from './history.js';
+
+import {
+  getFinancialMetrics
 } from './finance.js';
+
+import {
+  updateParkingSettings
+} from './settings.js';
 
 import {
   getDashboardMetrics,
@@ -34,121 +63,104 @@ import {
   renderPaymentDistributionSVG
 } from './dashboard.js';
 
-import {
-  formatPlateDisplay,
-  formatBRL,
-  formatDateTimeBR,
-  formatDuration,
-  getLocalDatetimeInputValue,
-  escapeHTML
-} from './utils.js';
+// Estado global da interface SPA
+let currentView = 'dashboard';
+let currentCheckoutTicket = null;
+let currentReceiptData = null;
+let financePeriod = 'all';
 
-/* ==================== ESTADO DA INTERFACE ==================== */
-const AppState = {
-  currentView: 'dashboard',
-  selectedCheckoutVehicleId: null,
-  selectedPaymentMethod: 'pix',
-  currentCheckoutPreview: null,
-  financePeriod: 'all',
-  liveTimerId: null
-};
+/* ==========================================================================
+   Inicialização do Sistema
+   ========================================================================== */
+export function initApp() {
+  if (typeof document === 'undefined') return;
 
-/* ==================== INICIALIZAÇÃO ==================== */
-document.addEventListener('DOMContentLoaded', () => {
-  initNavigation();
-  initHeaderClock();
-  initEntryForm();
-  initParkedSection();
-  initHistorySection();
-  initFinanceSection();
-  initSettingsSection();
-  initModals();
-  initDemoAndResetButtons();
+  // Inicialização padrão segura de configurações (sem apagar dados existentes)
+  getSettings();
 
-  refreshAllViews();
+  setupNavigation();
+  setupHeaderClock();
+  setupEntryForm();
+  setupParkedView();
+  setupCheckoutModal();
+  setupHistoryView();
+  setupFinanceView();
+  setupSettingsView();
+  setupDemoAndReset();
+  setupMobileSidebar();
 
-  // Atualiza tempos de permanência e parciais a cada 30 segundos
-  AppState.liveTimerId = setInterval(() => {
-    if (AppState.currentView === 'parked' || AppState.currentView === 'dashboard') {
-      renderParkedTable();
-      renderDashboardView();
+  // Renderização inicial completa
+  updateHeaderStatus();
+  renderDashboard();
+  renderEntryView();
+  renderParkedList();
+  renderHistoryList();
+  renderFinanceDashboard();
+  renderSettingsForm();
+
+  // Loop de atualização em tempo real (atualiza relógio e estimativas a cada segundo)
+  setInterval(() => {
+    updateHeaderClock();
+    if (currentView === 'parked') {
+      updateParkedDurationsAndFees();
     }
-  }, 30000);
-});
-
-/* ==================== SISTEMA DE NOTIFICAÇÕES (TOAST) ==================== */
-export function showToast(title, message, type = 'info') {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-
-  const icons = {
-    success: '✓',
-    error: '✕',
-    warning: '!',
-    info: 'i'
-  };
-
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.innerHTML = `
-    <span class="toast-icon">${icons[type] || icons.info}</span>
-    <div class="toast-content">
-      <div class="toast-title">${escapeHTML(title)}</div>
-      <div class="toast-message">${escapeHTML(message)}</div>
-    </div>
-  `;
-
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transition = 'opacity 0.2s ease';
-    setTimeout(() => toast.remove(), 200);
-  }, 4000);
+  }, 1000);
 }
 
-/* ==================== NAVEGAÇÃO ENTRE SEÇÕES ==================== */
-function initNavigation() {
-  const navButtons = document.querySelectorAll('.nav-btn[data-view]');
-  const mobileToggle = document.getElementById('mobile-menu-toggle');
-  const sidebar = document.querySelector('.sidebar');
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
+}
 
+/* ==========================================================================
+   Navegação e Alternância de Telas (SPA)
+   ========================================================================== */
+function setupNavigation() {
+  const navButtons = document.querySelectorAll('.nav-btn[data-view]');
   navButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      const targetView = btn.getAttribute('data-view');
-      navigateTo(targetView);
-      if (sidebar.classList.contains('open')) {
-        sidebar.classList.remove('open');
+      const targetView = btn.dataset.view;
+      if (targetView) {
+        navigateTo(targetView);
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+          sidebar.classList.remove('open');
+          sidebar.classList.remove('mobile-open');
+        }
       }
     });
   });
 
-  document.querySelectorAll('[data-goto-view]').forEach(trigger => {
-    trigger.addEventListener('click', () => {
-      const target = trigger.getAttribute('data-goto-view');
-      navigateTo(target);
+  // Atalhos rápidos no Dashboard, Entradas ou Cabeçalho
+  document.querySelectorAll('[data-goto-view]').forEach(el => {
+    el.addEventListener('click', () => {
+      const view = el.dataset.gotoView;
+      if (view) navigateTo(view);
     });
   });
-
-  if (mobileToggle && sidebar) {
-    mobileToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
-    });
-  }
 }
 
-function navigateTo(viewName) {
-  AppState.currentView = viewName;
+export function navigateTo(viewName) {
+  currentView = viewName;
 
+  // Atualiza estado ativo nos botões e itens da Sidebar
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('data-view') === viewName);
+    const isActive = btn.dataset.view === viewName;
+    btn.classList.toggle('active', isActive);
+    const parentItem = btn.closest('.nav-item');
+    if (parentItem) parentItem.classList.toggle('active', isActive);
   });
 
-  document.querySelectorAll('.app-view').forEach(section => {
-    section.classList.toggle('active', section.id === `view-${viewName}`);
+  // Alterna contêiner de visualização
+  document.querySelectorAll('.app-view').forEach(view => {
+    view.classList.toggle('active', view.id === `view-${viewName}`);
   });
 
-  const viewTitles = {
+  // Atualiza título do cabeçalho
+  const titles = {
     dashboard: 'Dashboard',
     entry: 'Entradas',
     parked: 'Veículos no Pátio',
@@ -156,103 +168,139 @@ function navigateTo(viewName) {
     finance: 'Financeiro',
     settings: 'Configurações'
   };
-
-  const pageTitleEl = document.getElementById('current-page-title');
-  if (pageTitleEl && viewTitles[viewName]) {
-    pageTitleEl.textContent = viewTitles[viewName];
+  const titleEl = document.getElementById('current-page-title');
+  if (titleEl && titles[viewName]) {
+    titleEl.textContent = titles[viewName];
   }
 
-  if (viewName === 'entry') {
-    const timeInput = document.getElementById('entry-time');
-    if (timeInput) timeInput.value = getLocalDatetimeInputValue();
-    updateEntrySpotsAvailability();
-  } else if (viewName === 'settings') {
-    populateSettingsForm();
-  }
-
-  refreshAllViews();
+  renderCurrentView();
+  updateHeaderStatus();
 }
 
-/* ==================== RELÓGIO E STATUS GLOBAL ==================== */
-function initHeaderClock() {
+export function renderCurrentView() {
+  switch (currentView) {
+    case 'dashboard':
+      renderDashboard();
+      break;
+    case 'entry':
+      renderEntryView();
+      break;
+    case 'parked':
+      renderParkedList();
+      break;
+    case 'history':
+      renderHistoryList();
+      break;
+    case 'finance':
+      renderFinanceDashboard();
+      break;
+    case 'settings':
+      renderSettingsForm();
+      break;
+  }
+}
+
+/* ==========================================================================
+   Cabeçalho, Relógio e Badges Globais
+   ========================================================================== */
+function setupHeaderClock() {
+  updateHeaderClock();
+}
+
+function updateHeaderClock() {
   const clockEl = document.getElementById('header-live-clock');
   if (!clockEl) return;
-
-  const updateClock = () => {
-    const now = new Date();
-    clockEl.textContent = now.toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
-  };
-  updateClock();
-  setInterval(updateClock, 1000);
+  const now = new Date();
+  clockEl.textContent = now.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
 }
 
-function updateGlobalHeaderAndBadges() {
-  const settings = getSettings();
+export function updateHeaderStatus() {
   const capacity = getCapacityStatus();
+  const settings = getSettings();
 
-  const estNameEl = document.getElementById('header-establishment-name');
-  if (estNameEl) estNameEl.textContent = settings.establishmentName;
+  const headerEstablishment = document.getElementById('header-establishment-name');
+  if (headerEstablishment) {
+    headerEstablishment.textContent = settings.parkingName;
+  }
 
-  const parkedBadge = document.getElementById('nav-parked-count');
-  if (parkedBadge) parkedBadge.textContent = capacity.totalOccupied;
+  const badgeSpots = document.getElementById('header-available-spots');
+  if (badgeSpots) {
+    badgeSpots.textContent = `${capacity.totalAvailable} de ${capacity.totalSpots} vagas livres`;
+  }
 
-  const headerSpotsEl = document.getElementById('header-available-spots');
-  if (headerSpotsEl) {
-    headerSpotsEl.textContent = `${capacity.totalAvailable} de ${capacity.totalCapacity} vagas livres`;
+  const parkedBadgeCount = document.getElementById('nav-parked-count');
+  if (parkedBadgeCount) {
+    parkedBadgeCount.textContent = capacity.totalOccupied;
   }
 }
 
-function refreshAllViews() {
-  updateGlobalHeaderAndBadges();
-  renderDashboardView();
-  updateEntrySpotsAvailability();
-  renderParkedTable();
-  renderHistoryTable();
-  renderFinanceView();
-}
+/* ==========================================================================
+   Tela 1 — Dashboard
+   ========================================================================== */
+export function renderDashboard() {
+  const metrics = getDashboardMetrics();
 
-/* ==================== 1. DASHBOARD ==================== */
-function renderDashboardView() {
-  const data = getDashboardMetrics();
-  const active = getActiveVehicles();
-  const history = getHistory();
+  const totalSpotsEl = document.getElementById('dash-total-spots');
+  if (totalSpotsEl) totalSpotsEl.textContent = metrics.capacity.totalSpots;
 
-  setText('dash-total-spots', data.capacity.totalCapacity);
-  setText('dash-avail-spots', data.capacity.totalAvailable);
-  setText('dash-avail-details', `${data.capacity.car.available} carros · ${data.capacity.moto.available} motos`);
-  setText('dash-occupied-spots', data.capacity.totalOccupied);
-  setText('dash-occupancy-rate', `${data.capacity.occupancyRate}%`);
-  setText('dash-entries-today', data.entriesTodayCount);
-  setText('dash-exits-today', data.exitsTodayCount);
-  setText('dash-today-revenue', formatBRL(data.todayRevenue));
+  const availSpotsEl = document.getElementById('dash-avail-spots');
+  if (availSpotsEl) availSpotsEl.textContent = `${metrics.capacity.totalAvailable}`;
 
-  const progressFill = document.getElementById('dash-occupancy-bar');
-  if (progressFill) {
-    progressFill.style.width = `${Math.min(100, data.capacity.occupancyRate)}%`;
-    progressFill.style.backgroundColor =
-      data.capacity.occupancyRate >= 90 ? '#EF4444' :
-      data.capacity.occupancyRate >= 70 ? '#F59E0B' : '#3B82F6';
+  const availDetailsEl = document.getElementById('dash-avail-details');
+  if (availDetailsEl) {
+    availDetailsEl.textContent = `${metrics.capacity.cars.available} carros · ${metrics.capacity.motos.available} motos`;
   }
 
+  const occupiedSpotsEl = document.getElementById('dash-occupied-spots');
+  if (occupiedSpotsEl) occupiedSpotsEl.textContent = metrics.capacity.totalOccupied;
+
+  const occupancyRateEl = document.getElementById('dash-occupancy-rate');
+  if (occupancyRateEl) {
+    occupancyRateEl.textContent = `${metrics.capacity.overallOccupancyPct}%`;
+  }
+
+  const progressBar = document.getElementById('dash-occupancy-bar');
+  if (progressBar) {
+    const pct = Math.min(100, metrics.capacity.overallOccupancyPct);
+    progressBar.style.width = `${pct}%`;
+    progressBar.style.backgroundColor =
+      pct >= 90 ? '#EF4444' :
+      pct >= 70 ? '#F59E0B' : '#3B82F6';
+  }
+
+  const entriesTodayEl = document.getElementById('dash-entries-today');
+  if (entriesTodayEl) entriesTodayEl.textContent = metrics.entriesTodayCount;
+
+  const exitsTodayEl = document.getElementById('dash-exits-today');
+  if (exitsTodayEl) exitsTodayEl.textContent = metrics.exitsTodayCount;
+
+  const todayRevenueEl = document.getElementById('dash-today-revenue');
+  if (todayRevenueEl) todayRevenueEl.textContent = formatBRL(metrics.todayRevenue);
+
+  // Gráfico SVG de Movimentações por Horário
   const chartContainer = document.getElementById('dash-chart-container');
   if (chartContainer) {
+    const active = getActiveVehicles();
+    const history = getHistory();
     chartContainer.innerHTML = renderMovementsChartSVG(active, history);
   }
 
+  // Ocupação por Categoria + Mapa de Vagas
   const catBreakdownEl = document.getElementById('dash-category-breakdown');
   if (catBreakdownEl) {
-    catBreakdownEl.innerHTML = renderCategoryBreakdownHTML(data.capacity);
+    catBreakdownEl.innerHTML = renderCategoryBreakdownHTML(metrics.capacity);
   }
 
-  const recentTbody = document.getElementById('dash-recent-tbody');
-  if (!recentTbody) return;
+  // Tabela de Movimentações do Dia
+  const recentTableBody = document.getElementById('dash-recent-tbody');
+  if (!recentTableBody) return;
 
-  if (data.recentActivities.length === 0) {
-    recentTbody.innerHTML = `
+  if (metrics.recentActivities.length === 0) {
+    recentTableBody.innerHTML = `
       <tr>
         <td colspan="6">
           <div class="empty-state">
@@ -266,61 +314,64 @@ function renderDashboardView() {
         </td>
       </tr>
     `;
+
     const newEntryBtn = document.getElementById('dash-empty-new-entry');
-    if (newEntryBtn) newEntryBtn.addEventListener('click', () => navigateTo('entry'));
+    if (newEntryBtn) {
+      newEntryBtn.addEventListener('click', () => navigateTo('entry'));
+    }
+
     const seedBtn = document.getElementById('dash-empty-seed');
     if (seedBtn) {
-      seedBtn.addEventListener('click', () => {
-        seedDemoData();
-        refreshAllViews();
-        showToast('Demonstração carregada', 'Veículos no pátio e histórico preenchidos.', 'success');
-      });
+      seedBtn.addEventListener('click', () => triggerSeedDemo());
     }
     return;
   }
 
-  recentTbody.innerHTML = data.recentActivities.map(act => {
-    const isCar = act.vehicleType === 'car';
-    const typeBadge = isCar
-      ? `<span class="badge badge-car">Carro</span>`
-      : `<span class="badge badge-moto">Moto</span>`;
+  recentTableBody.innerHTML = metrics.recentActivities.map(act => `
+    <tr>
+      <td><span class="plate-tag">${escapeHTML(formatPlate(act.plate))}</span></td>
+      <td>
+        <span class="badge ${act.vehicleType === 'car' ? 'badge-car' : 'badge-moto'}">
+          ${act.vehicleType === 'car' ? 'Carro' : 'Moto'}
+        </span>
+      </td>
+      <td style="color: #E5E7EB;">${escapeHTML(act.driverName || '—')}</td>
+      <td class="mono">${formatDateTime(act.timestamp)}</td>
+      <td>
+        <span class="badge ${act.status === 'active' ? 'badge-active' : 'badge-completed'}">
+          ${act.status === 'active' ? 'No pátio' : 'Finalizado'}
+        </span>
+      </td>
+      <td class="col-right">
+        ${act.status === 'active'
+          ? `<button type="button" class="btn btn-secondary btn-xs action-checkout-btn" data-id="${escapeHTML(act.id)}">Registrar saída</button>`
+          : `<span class="mono" style="font-weight: 600; color: #E5E7EB;">${formatBRL(act.totalCharged)}</span>`
+        }
+      </td>
+    </tr>
+  `).join('');
 
-    const statusBadge = act.status === 'active'
-      ? `<span class="badge badge-active">No pátio</span>`
-      : `<span class="badge badge-completed">Finalizado</span>`;
-
-    const rightCell = act.status === 'completed'
-      ? `<span class="mono" style="color: #E5E7EB; font-weight: 600;">${formatBRL(act.totalCharged)}</span>`
-      : `<button type="button" class="btn btn-secondary btn-xs btn-dash-checkout" data-id="${escapeHTML(act.id)}">Registrar saída</button>`;
-
-    return `
-      <tr>
-        <td><span class="plate-tag">${escapeHTML(formatPlateDisplay(act.plate))}</span></td>
-        <td>${typeBadge}</td>
-        <td style="color: #E5E7EB;">${escapeHTML(act.driverName || '—')}</td>
-        <td class="mono">${formatDateTimeBR(act.timestamp)}</td>
-        <td>${statusBadge}</td>
-        <td class="col-right">${rightCell}</td>
-      </tr>
-    `;
-  }).join('');
-
-  recentTbody.querySelectorAll('.btn-dash-checkout').forEach(btn => {
+  recentTableBody.querySelectorAll('.action-checkout-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      openCheckoutModal(btn.getAttribute('data-id'));
+      openCheckoutModal(btn.dataset.id);
     });
   });
 }
 
-/* ==================== 2. REGISTRO DE ENTRADA ==================== */
-function initEntryForm() {
+/* ==========================================================================
+   Tela 2 — Entrada de Veículos
+   ========================================================================== */
+function setupEntryForm() {
   const form = document.getElementById('form-entry');
   const plateInput = document.getElementById('entry-plate');
-  const timeInput = document.getElementById('entry-time');
   const typeCards = document.querySelectorAll('.vehicle-type-card');
 
-  if (timeInput) {
-    timeInput.value = getLocalDatetimeInputValue();
+  if (plateInput) {
+    plateInput.addEventListener('input', (e) => {
+      let val = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
+      if (val.length > 8) val = val.slice(0, 8);
+      e.target.value = val;
+    });
   }
 
   typeCards.forEach(card => {
@@ -332,114 +383,141 @@ function initEntryForm() {
     });
   });
 
-  if (plateInput) {
-    plateInput.addEventListener('input', (e) => {
-      let val = e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-      if (val.length > 8) val = val.slice(0, 8);
-      e.target.value = val;
-    });
-  }
-
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
-      const plate = document.getElementById('entry-plate').value;
-      const driverName = document.getElementById('entry-driver').value;
-      const entryTimeRaw = document.getElementById('entry-time').value;
-      const checkedRadio = document.querySelector('input[name="entry-vehicle-type"]:checked');
-      const vehicleType = checkedRadio ? checkedRadio.value : 'car';
+      handleEntrySubmit();
+    });
 
-      const entryIso = entryTimeRaw ? new Date(entryTimeRaw).toISOString() : new Date().toISOString();
-
-      const result = registerVehicleEntry({
-        plate,
-        vehicleType,
-        driverName,
-        entryTime: entryIso
-      });
-
-      if (!result.success) {
-        showToast('Entrada recusada', result.error, 'error');
-        return;
-      }
-
-      showToast(
-        'Entrada registrada',
-        `Veículo ${formatPlateDisplay(result.ticket.plate)} (${result.ticket.id}) alocado no pátio.`,
-        'success'
-      );
-
-      form.reset();
-      if (timeInput) timeInput.value = getLocalDatetimeInputValue();
-      typeCards.forEach((c, idx) => c.classList.toggle('selected', idx === 0));
-
-      refreshAllViews();
-      openEntryTicketModal(result.ticket);
+    form.addEventListener('reset', () => {
+      setTimeout(() => {
+        typeCards.forEach((c, idx) => {
+          c.classList.toggle('selected', idx === 0);
+          const radio = c.querySelector('input[type="radio"]');
+          if (radio) radio.checked = idx === 0;
+        });
+        const timeInput = document.getElementById('entry-time');
+        if (timeInput) timeInput.value = getLocalDatetimeInputValue();
+      }, 0);
     });
   }
 }
 
-function updateEntrySpotsAvailability() {
-  const cap = getCapacityStatus();
+export function renderEntryView() {
+  const capacity = getCapacityStatus();
   const settings = getSettings();
 
-  setText('entry-car-spots-info', `${cap.car.available} de ${cap.car.total} livres`);
-  setText('entry-moto-spots-info', `${cap.moto.available} de ${cap.moto.total} livres`);
+  const carSpotsInfo = document.getElementById('entry-car-spots-info');
+  if (carSpotsInfo) {
+    carSpotsInfo.textContent = `${capacity.cars.available} vagas livres (${formatBRL(settings.carHourlyRate)}/h)`;
+  }
 
-  setText('entry-side-car-rate', formatBRL(settings.carFirstHourRate));
-  setText('entry-side-moto-rate', formatBRL(settings.motoFirstHourRate));
-  setText('entry-side-fraction', `${settings.additionalHourRatePercent}% da 1ª hora`);
-  setText('entry-side-tolerance', `${settings.toleranceMinutes} min`);
-  setText('entry-side-car-avail', `${cap.car.available} / ${cap.car.total} livres`);
-  setText('entry-side-moto-avail', `${cap.moto.available} / ${cap.moto.total} livres`);
+  const motoSpotsInfo = document.getElementById('entry-moto-spots-info');
+  if (motoSpotsInfo) {
+    motoSpotsInfo.textContent = `${capacity.motos.available} vagas livres (${formatBRL(settings.motoHourlyRate)}/h)`;
+  }
 
-  const submitBtn = document.getElementById('btn-submit-entry');
-  if (submitBtn) {
-    submitBtn.disabled = cap.isFull;
-    submitBtn.textContent = cap.isFull ? 'Pátio lotado' : 'Confirmar entrada';
+  // Painel lateral de tarifas e disponibilidade
+  const sideCarRate = document.getElementById('entry-side-car-rate');
+  if (sideCarRate) sideCarRate.textContent = formatBRL(settings.carHourlyRate);
+
+  const sideMotoRate = document.getElementById('entry-side-moto-rate');
+  if (sideMotoRate) sideMotoRate.textContent = formatBRL(settings.motoHourlyRate);
+
+  const sideFraction = document.getElementById('entry-side-fraction');
+  if (sideFraction) sideFraction.textContent = `${settings.fractionMinutes} min (25% da 1ª h)`;
+
+  const sideTolerance = document.getElementById('entry-side-tolerance');
+  if (sideTolerance) sideTolerance.textContent = `${settings.toleranceMinutes} min`;
+
+  const sideCarAvail = document.getElementById('entry-side-car-avail');
+  if (sideCarAvail) sideCarAvail.textContent = `${capacity.cars.available} / ${capacity.cars.total} livres`;
+
+  const sideMotoAvail = document.getElementById('entry-side-moto-avail');
+  if (sideMotoAvail) sideMotoAvail.textContent = `${capacity.motos.available} / ${capacity.motos.total} livres`;
+
+  const timeInput = document.getElementById('entry-time');
+  if (timeInput && !timeInput.value) {
+    timeInput.value = getLocalDatetimeInputValue();
   }
 }
 
-/* ==================== 3. VEÍCULOS NO PÁTIO ==================== */
-function initParkedSection() {
+function handleEntrySubmit() {
+  const plateInput = document.getElementById('entry-plate');
+  const driverInput = document.getElementById('entry-driver');
+  const timeInput = document.getElementById('entry-time');
+  const selectedTypeRadio = document.querySelector('input[name="entry-vehicle-type"]:checked');
+
+  const plate = plateInput ? plateInput.value.trim() : '';
+  const vehicleType = selectedTypeRadio ? selectedTypeRadio.value : 'car';
+  const driverName = driverInput ? driverInput.value.trim() : '';
+  const entryTimeVal = timeInput && timeInput.value ? new Date(timeInput.value) : new Date();
+
+  try {
+    const ticket = registerVehicleEntry({
+      plate,
+      vehicleType,
+      driverName,
+      entryTime: entryTimeVal
+    });
+
+    showToast('Entrada registrada', `Veículo ${formatPlate(ticket.plate)} alocado no pátio (${ticket.id}).`, 'success');
+
+    if (plateInput) plateInput.value = '';
+    if (driverInput) driverInput.value = '';
+    if (timeInput) timeInput.value = getLocalDatetimeInputValue();
+
+    updateHeaderStatus();
+    renderEntryView();
+    renderDashboard();
+    renderParkedList();
+
+    openEntryTicketModal(ticket);
+  } catch (err) {
+    showToast('Entrada recusada', err.message, 'danger');
+  }
+}
+
+/* ==========================================================================
+   Tela 3 — Veículos no Pátio
+   ========================================================================== */
+function setupParkedView() {
   const searchInput = document.getElementById('parked-search');
-  const typeSelect = document.getElementById('parked-type-filter');
+  const typeFilter = document.getElementById('parked-type-filter');
 
   if (searchInput) {
-    searchInput.addEventListener('input', () => renderParkedTable());
+    searchInput.addEventListener('input', () => renderParkedList());
   }
-  if (typeSelect) {
-    typeSelect.addEventListener('change', () => renderParkedTable());
+
+  if (typeFilter) {
+    typeFilter.addEventListener('change', () => renderParkedList());
   }
 }
 
-function renderParkedTable() {
+export function renderParkedList() {
+  const searchInput = document.getElementById('parked-search');
+  const typeFilter = document.getElementById('parked-type-filter');
+
+  const query = searchInput ? searchInput.value : '';
+  const type = (typeFilter && typeFilter.value) ? typeFilter.value : 'all';
+
+  const vehicles = filterActiveVehicles(query, type);
   const tbody = document.getElementById('parked-tbody');
+  const countBadge = document.getElementById('parked-filtered-count');
+
+  if (countBadge) {
+    countBadge.textContent = `${vehicles.length}`;
+  }
+
   if (!tbody) return;
 
-  const searchVal = (document.getElementById('parked-search')?.value || '').trim().toUpperCase();
-  const typeVal = document.getElementById('parked-type-filter')?.value || 'all';
-
-  const activeVehicles = getActiveVehicles();
-  const filtered = activeVehicles.filter(v => {
-    const matchesSearch = !searchVal ||
-      v.plate.includes(searchVal.replace(/[^A-Z0-9]/g, '')) ||
-      (v.driverName && v.driverName.toUpperCase().includes(searchVal)) ||
-      (v.id && v.id.toUpperCase().includes(searchVal));
-
-    const matchesType = typeVal === 'all' || v.vehicleType === typeVal;
-    return matchesSearch && matchesType;
-  });
-
-  setText('parked-filtered-count', filtered.length);
-
-  if (filtered.length === 0) {
+  if (vehicles.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="8">
           <div class="empty-state">
             <div class="empty-state-title">Nenhum veículo no pátio</div>
-            <div class="empty-state-desc">Não há veículos ativos correspondentes aos filtros selecionados.</div>
+            <div class="empty-state-desc">${query ? 'Nenhum veículo ativo corresponde à busca informada.' : 'Não há veículos estacionados no momento.'}</div>
           </div>
         </td>
       </tr>
@@ -447,289 +525,408 @@ function renderParkedTable() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(v => {
-    const preview = previewVehicleCheckout(v.id);
-    const durationText = preview.success ? preview.preview.billing.durationFormatted : '0min';
-    const partialAmount = preview.success ? formatBRL(preview.preview.billing.totalCharged) : 'R$ 0,00';
+  const now = new Date();
 
-    const typeBadge = v.vehicleType === 'car'
-      ? `<span class="badge badge-car">Carro</span>`
-      : `<span class="badge badge-moto">Moto</span>`;
+  tbody.innerHTML = vehicles.map(v => {
+    const feeInfo = calculateParkingFee({
+      entryTime: v.entryTime,
+      exitTime: now.toISOString(),
+      hourlyRate: v.appliedPricing.hourlyRate,
+      toleranceMinutes: v.appliedPricing.toleranceMinutes,
+      fractionMinutes: v.appliedPricing.fractionMinutes,
+      fractionPercent: v.appliedPricing.fractionPercent
+    });
 
     return `
-      <tr>
+      <tr data-ticket-id="${escapeHTML(v.id)}" data-entry-time="${escapeHTML(v.entryTime)}">
         <td class="mono">${escapeHTML(v.id)}</td>
-        <td><span class="plate-tag">${escapeHTML(formatPlateDisplay(v.plate))}</span></td>
-        <td>${typeBadge}</td>
+        <td><span class="plate-tag">${escapeHTML(formatPlate(v.plate))}</span></td>
+        <td>
+          <span class="badge ${v.vehicleType === 'car' ? 'badge-car' : 'badge-moto'}">
+            ${v.vehicleType === 'car' ? 'Carro' : 'Moto'}
+          </span>
+        </td>
         <td style="color: #E5E7EB;">${escapeHTML(v.driverName || '—')}</td>
-        <td class="mono">${formatDateTimeBR(v.entryTime)}</td>
-        <td class="mono" style="color: #93C5FD;">${durationText}</td>
-        <td class="col-right mono" style="color: #E5E7EB; font-weight: 600;">${partialAmount}</td>
+        <td class="mono">${formatDateTime(v.entryTime)}</td>
+        <td class="col-duration mono" style="color: #93C5FD;">${feeInfo.formattedDuration}</td>
+        <td class="col-estimated-fee col-right mono" style="font-weight: 600; color: #E5E7EB;">
+          ${formatBRL(feeInfo.totalAmount)}
+        </td>
         <td class="col-right">
           <div class="table-actions">
-            <button type="button" class="btn btn-secondary btn-xs btn-view-ticket" data-id="${escapeHTML(v.id)}">Ticket</button>
-            <button type="button" class="btn btn-primary btn-xs btn-checkout-vehicle" data-id="${escapeHTML(v.id)}">Registrar saída</button>
+            <button type="button" class="btn btn-secondary btn-xs btn-action-view-ticket" data-id="${escapeHTML(v.id)}">
+              Ticket
+            </button>
+            <button type="button" class="btn btn-primary btn-xs btn-action-checkout" data-id="${escapeHTML(v.id)}">
+              Registrar saída
+            </button>
           </div>
         </td>
       </tr>
     `;
   }).join('');
 
-  tbody.querySelectorAll('.btn-checkout-vehicle').forEach(btn => {
-    btn.addEventListener('click', () => openCheckoutModal(btn.getAttribute('data-id')));
+  tbody.querySelectorAll('.btn-action-checkout').forEach(btn => {
+    btn.addEventListener('click', () => openCheckoutModal(btn.dataset.id));
   });
 
-  tbody.querySelectorAll('.btn-view-ticket').forEach(btn => {
+  tbody.querySelectorAll('.btn-action-view-ticket').forEach(btn => {
     btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      const vehicle = getActiveVehicles().find(item => item.id === id);
-      if (vehicle) openEntryTicketModal(vehicle);
+      const v = findActiveVehicle(btn.dataset.id);
+      if (v) openEntryTicketModal(v);
     });
   });
 }
 
-/* ==================== 4. MODAL DE SAÍDA E CAIXA ==================== */
-function initModals() {
-  document.getElementById('checkout-modal-close')?.addEventListener('click', closeCheckoutModal);
-  document.getElementById('checkout-cancel-btn')?.addEventListener('click', closeCheckoutModal);
+function updateParkedDurationsAndFees() {
+  const rows = document.querySelectorAll('#parked-tbody tr[data-ticket-id]');
+  if (rows.length === 0) return;
 
-  const methodBtns = document.querySelectorAll('.payment-method-btn');
-  methodBtns.forEach(btn => {
+  const activeVehicles = getActiveVehicles();
+  const now = new Date();
+
+  rows.forEach(row => {
+    const ticketId = row.dataset.ticketId;
+    const vehicle = activeVehicles.find(v => v.id === ticketId);
+    if (!vehicle) return;
+
+    const feeInfo = calculateParkingFee({
+      entryTime: vehicle.entryTime,
+      exitTime: now.toISOString(),
+      hourlyRate: vehicle.appliedPricing.hourlyRate,
+      toleranceMinutes: vehicle.appliedPricing.toleranceMinutes,
+      fractionMinutes: vehicle.appliedPricing.fractionMinutes,
+      fractionPercent: vehicle.appliedPricing.fractionPercent
+    });
+
+    const durationCol = row.querySelector('.col-duration');
+    const feeCol = row.querySelector('.col-estimated-fee');
+
+    if (durationCol) durationCol.textContent = feeInfo.formattedDuration;
+    if (feeCol) feeCol.textContent = formatBRL(feeInfo.totalAmount);
+  });
+}
+
+/* ==========================================================================
+   Tela 4 — Modal de Saída e Pagamento (Checkout)
+   ========================================================================== */
+function setupCheckoutModal() {
+  const modal = document.getElementById('modal-checkout');
+  const closeBtn = document.getElementById('checkout-modal-close');
+  const cancelBtn = document.getElementById('checkout-cancel-btn');
+  const confirmBtn = document.getElementById('checkout-confirm-btn');
+  const methodButtons = document.querySelectorAll('.payment-method-btn');
+  const cashAmountInput = document.getElementById('checkout-cash-received');
+
+  const closeModal = () => {
+    if (modal) {
+      modal.classList.remove('open');
+      modal.classList.remove('active');
+    }
+    currentCheckoutTicket = null;
+  };
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+  methodButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      methodBtns.forEach(b => b.classList.remove('selected'));
+      methodButtons.forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      AppState.selectedPaymentMethod = btn.getAttribute('data-method');
-      updateCheckoutPaymentMethodUI();
+      const method = btn.dataset.method;
+      togglePaymentInputs(method);
     });
   });
 
-  const cashInput = document.getElementById('checkout-cash-received');
-  if (cashInput) {
-    cashInput.addEventListener('input', updateCashChangeDisplay);
+  if (cashAmountInput) {
+    cashAmountInput.addEventListener('input', () => {
+      updateCashCalculation();
+    });
   }
 
-  document.getElementById('checkout-confirm-btn')?.addEventListener('click', handleConfirmCheckout);
-
-  document.getElementById('entry-ticket-close')?.addEventListener('click', () => {
-    document.getElementById('modal-entry-ticket')?.classList.remove('open');
-  });
-  document.getElementById('entry-ticket-print')?.addEventListener('click', () => window.print());
-
-  document.getElementById('receipt-modal-close')?.addEventListener('click', () => {
-    document.getElementById('modal-receipt')?.classList.remove('open');
-  });
-  document.getElementById('receipt-modal-print')?.addEventListener('click', () => window.print());
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', () => {
+      handleCheckoutConfirm();
+    });
+  }
 }
 
-function openCheckoutModal(vehicleId) {
-  const result = previewVehicleCheckout(vehicleId);
-  if (!result.success) {
-    showToast('Erro na saída', result.error, 'error');
+export function openCheckoutModal(ticketId) {
+  const ticket = findActiveVehicle(ticketId);
+  if (!ticket) {
+    showToast('Atenção', 'Permanência não encontrada.', 'warning');
     return;
   }
 
-  AppState.selectedCheckoutVehicleId = vehicleId;
-  AppState.currentCheckoutPreview = result.preview;
-  AppState.selectedPaymentMethod = 'pix';
+  currentCheckoutTicket = ticket;
+  const modal = document.getElementById('modal-checkout');
+  if (!modal) return;
 
-  const { vehicle, exitTime, billing } = result.preview;
+  const now = new Date();
+  const feeInfo = calculateParkingFee({
+    entryTime: ticket.entryTime,
+    exitTime: now.toISOString(),
+    hourlyRate: ticket.appliedPricing.hourlyRate,
+    toleranceMinutes: ticket.appliedPricing.toleranceMinutes,
+    fractionMinutes: ticket.appliedPricing.fractionMinutes,
+    fractionPercent: ticket.appliedPricing.fractionPercent
+  });
 
-  setText('checkout-plate-display', formatPlateDisplay(vehicle.plate));
-  setText('checkout-ticket-id', vehicle.id);
+  document.getElementById('checkout-plate-display').textContent = formatPlate(ticket.plate);
+  document.getElementById('checkout-ticket-id').textContent = ticket.id;
 
   const typeBadgeEl = document.getElementById('checkout-type-badge');
   if (typeBadgeEl) {
-    typeBadgeEl.innerHTML = vehicle.vehicleType === 'car'
+    typeBadgeEl.innerHTML = ticket.vehicleType === 'car'
       ? '<span class="badge badge-car">Carro / Utilitário</span>'
       : '<span class="badge badge-moto">Motocicleta</span>';
   }
 
-  setText('checkout-entry-time', formatDateTimeBR(vehicle.entryTime));
-  setText('checkout-exit-time', formatDateTimeBR(exitTime));
-  setText('checkout-duration', billing.durationFormatted);
-  setText('checkout-total-price', formatBRL(billing.totalCharged));
-  setText('checkout-memory-summary', billing.memorySummary);
+  document.getElementById('checkout-entry-time').textContent = formatDateTime(ticket.entryTime);
+  document.getElementById('checkout-exit-time').textContent = formatDateTime(now);
+  document.getElementById('checkout-duration').textContent = feeInfo.formattedDuration;
+  document.getElementById('checkout-total-price').textContent = formatBRL(feeInfo.totalAmount);
+  document.getElementById('checkout-memory-summary').textContent = feeInfo.summary;
 
-  document.querySelectorAll('.payment-method-btn').forEach(btn => {
-    btn.classList.toggle('selected', btn.getAttribute('data-method') === 'pix');
-  });
+  document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('selected'));
+  const defaultMethodBtn = document.querySelector('.payment-method-btn[data-method="pix"]');
+  if (defaultMethodBtn) defaultMethodBtn.classList.add('selected');
+  togglePaymentInputs('pix');
 
-  const cashInput = document.getElementById('checkout-cash-received');
-  if (cashInput) cashInput.value = billing.totalCharged.toFixed(2);
-
-  updateCheckoutPaymentMethodUI();
-
-  const modal = document.getElementById('modal-checkout');
-  if (modal) modal.classList.add('open');
+  modal.classList.add('open');
+  modal.classList.add('active');
 }
 
-function updateCheckoutPaymentMethodUI() {
+function togglePaymentInputs(method) {
   const cashContainer = document.getElementById('checkout-cash-container');
   const pixContainer = document.getElementById('checkout-pix-container');
+  const cashInput = document.getElementById('checkout-cash-received');
+  const confirmBtn = document.getElementById('checkout-confirm-btn');
 
   if (cashContainer) {
-    cashContainer.style.display = AppState.selectedPaymentMethod === 'money' ? 'block' : 'none';
+    cashContainer.style.display = method === 'money' ? 'block' : 'none';
   }
   if (pixContainer) {
-    pixContainer.style.display = AppState.selectedPaymentMethod === 'pix' ? 'flex' : 'none';
+    pixContainer.style.display = method === 'pix' ? 'flex' : 'none';
   }
 
-  if (AppState.selectedPaymentMethod === 'money') {
-    updateCashChangeDisplay();
-  }
-}
-
-function updateCashChangeDisplay() {
-  const cashInput = document.getElementById('checkout-cash-received');
-  const changeEl = document.getElementById('checkout-change-display');
-  if (!cashInput || !changeEl || !AppState.currentCheckoutPreview) return;
-
-  const total = AppState.currentCheckoutPreview.billing.totalCharged;
-  const received = parseFloat(cashInput.value) || 0;
-  const diff = received - total;
-
-  if (diff < 0) {
-    changeEl.textContent = `Faltam ${formatBRL(Math.abs(diff))}`;
-    changeEl.style.color = '#EF4444';
-  } else {
-    changeEl.textContent = formatBRL(diff);
-    changeEl.style.color = '#22C55E';
-  }
-}
-
-function handleConfirmCheckout() {
-  if (!AppState.selectedCheckoutVehicleId || !AppState.currentCheckoutPreview) return;
-
-  const total = AppState.currentCheckoutPreview.billing.totalCharged;
-  let cashReceived = total;
-
-  if (AppState.selectedPaymentMethod === 'money') {
-    const cashInput = document.getElementById('checkout-cash-received');
-    cashReceived = parseFloat(cashInput?.value || 0);
-  }
-
-  const result = completeVehicleCheckout({
-    vehicleId: AppState.selectedCheckoutVehicleId,
-    paymentMethod: AppState.selectedPaymentMethod,
-    cashReceived,
-    exitTime: AppState.currentCheckoutPreview.exitTime
-  });
-
-  if (!result.success) {
-    showToast('Pagamento pendente', result.error, 'error');
-    return;
-  }
-
-  closeCheckoutModal();
-  refreshAllViews();
-
-  showToast(
-    'Saída concluída',
-    `Placa ${formatPlateDisplay(result.receipt.plate)} liberada (${formatBRL(result.receipt.totalCharged)}).`,
-    'success'
-  );
-
-  openReceiptModal(result.receipt);
-}
-
-function closeCheckoutModal() {
-  const modal = document.getElementById('modal-checkout');
-  if (modal) modal.classList.remove('open');
-  AppState.selectedCheckoutVehicleId = null;
-  AppState.currentCheckoutPreview = null;
-}
-
-/* ==================== COMPROVANTES (ENTRADA E RECIBO) ==================== */
-function openEntryTicketModal(ticket) {
-  const settings = getSettings();
-  setText('ticket-est-name', settings.establishmentName);
-  setText('ticket-id-display', ticket.id);
-  setText('ticket-plate-display', formatPlateDisplay(ticket.plate));
-  setText('ticket-type-display', ticket.vehicleType === 'car' ? 'Carro / Utilitário' : 'Motocicleta');
-  setText('ticket-entry-time-display', formatDateTimeBR(ticket.entryTime));
-  setText('ticket-driver-display', ticket.driverName || 'Não informado');
-  setText('ticket-rules-display', `Tolerância: ${settings.toleranceMinutes} min | 1ª hora: ${formatBRL(ticket.vehicleType === 'car' ? settings.carFirstHourRate : settings.motoFirstHourRate)}`);
-
-  document.getElementById('modal-entry-ticket')?.classList.add('open');
-}
-
-function openReceiptModal(receipt) {
-  const settings = getSettings();
-  setText('receipt-est-name', settings.establishmentName);
-  setText('receipt-id-display', receipt.id);
-  setText('receipt-plate-display', formatPlateDisplay(receipt.plate));
-  setText('receipt-type-display', receipt.vehicleType === 'car' ? 'Carro / Utilitário' : 'Motocicleta');
-  setText('receipt-entry-display', formatDateTimeBR(receipt.entryTime));
-  setText('receipt-exit-display', formatDateTimeBR(receipt.exitTime));
-  setText('receipt-duration-display', receipt.durationFormatted || formatDuration(receipt.durationMinutes));
-  setText('receipt-memory-display', receipt.memorySummary);
-  setText('receipt-total-display', formatBRL(receipt.totalCharged));
-  setText('receipt-method-display', getPaymentMethodLabel(receipt.paymentMethod));
-
-  document.getElementById('modal-receipt')?.classList.add('open');
-}
-
-/* ==================== 5. HISTÓRICO DE MOVIMENTAÇÕES ==================== */
-function initHistorySection() {
-  const inputs = ['history-search', 'history-type-filter', 'history-start-date', 'history-end-date'];
-  inputs.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.addEventListener('input', renderHistoryTable);
-      el.addEventListener('change', renderHistoryTable);
-    }
-  });
-
-  document.getElementById('history-clear-filters')?.addEventListener('click', () => {
-    inputs.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = id === 'history-type-filter' ? 'all' : '';
+  if (method === 'money' && cashInput && currentCheckoutTicket) {
+    const feeInfo = calculateParkingFee({
+      entryTime: currentCheckoutTicket.entryTime,
+      exitTime: new Date().toISOString(),
+      hourlyRate: currentCheckoutTicket.appliedPricing.hourlyRate,
+      toleranceMinutes: currentCheckoutTicket.appliedPricing.toleranceMinutes,
+      fractionMinutes: currentCheckoutTicket.appliedPricing.fractionMinutes,
+      fractionPercent: currentCheckoutTicket.appliedPricing.fractionPercent
     });
-    renderHistoryTable();
+    cashInput.value = feeInfo.totalAmount.toFixed(2);
+    updateCashCalculation();
+  } else if (confirmBtn) {
+    confirmBtn.disabled = false;
+  }
+}
+
+function updateCashCalculation() {
+  if (!currentCheckoutTicket) return;
+  const cashInput = document.getElementById('checkout-cash-received');
+  const changeDisplay = document.getElementById('checkout-change-display');
+  const confirmBtn = document.getElementById('checkout-confirm-btn');
+
+  const feeInfo = calculateParkingFee({
+    entryTime: currentCheckoutTicket.entryTime,
+    exitTime: new Date().toISOString(),
+    hourlyRate: currentCheckoutTicket.appliedPricing.hourlyRate,
+    toleranceMinutes: currentCheckoutTicket.appliedPricing.toleranceMinutes,
+    fractionMinutes: currentCheckoutTicket.appliedPricing.fractionMinutes,
+    fractionPercent: currentCheckoutTicket.appliedPricing.fractionPercent
   });
 
-  document.getElementById('history-export-csv')?.addEventListener('click', () => {
-    const filtered = getCurrentFilteredHistory();
-    if (filtered.length === 0) {
-      showToast('Exportação vazia', 'Não há registros no filtro atual para exportar.', 'warning');
-      return;
+  const paidAmount = cashInput ? parseFloat(cashInput.value) || 0 : 0;
+  const cashResult = calculateCashPayment(feeInfo.totalAmount, paidAmount);
+
+  if (changeDisplay) {
+    changeDisplay.textContent = cashResult.isValid ? formatBRL(cashResult.changeAmount) : `Faltam ${formatBRL(cashResult.missingAmount)}`;
+    changeDisplay.style.color = cashResult.isValid ? 'var(--color-success)' : 'var(--color-danger)';
+  }
+
+  if (confirmBtn) {
+    confirmBtn.disabled = !cashResult.isValid && feeInfo.totalAmount > 0;
+  }
+}
+
+function handleCheckoutConfirm() {
+  if (!currentCheckoutTicket) return;
+
+  const selectedMethodBtn = document.querySelector('.payment-method-btn.selected');
+  const paymentMethod = selectedMethodBtn ? selectedMethodBtn.dataset.method : 'pix';
+  const cashInput = document.getElementById('checkout-cash-received');
+  const amountPaid = paymentMethod === 'money' ? (cashInput ? parseFloat(cashInput.value) || 0 : 0) : 0;
+
+  try {
+    const finalizedRecord = finalizeVehicleExit({
+      ticketId: currentCheckoutTicket.id,
+      paymentMethod,
+      amountPaid,
+      exitTime: new Date()
+    });
+
+    showToast('Saída concluída', `Veículo ${formatPlate(finalizedRecord.plate)} liberado (${formatBRL(finalizedRecord.totalCharged)}).`, 'success');
+
+    const checkoutModal = document.getElementById('modal-checkout');
+    if (checkoutModal) {
+      checkoutModal.classList.remove('open');
+      checkoutModal.classList.remove('active');
     }
-    const csvContent = generateHistoryCSV(filtered);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `historico_parkcontrol_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    showToast('Arquivo exportado', 'Relatório CSV gerado com sucesso.', 'success');
-  });
+    currentCheckoutTicket = null;
+
+    updateHeaderStatus();
+    renderDashboard();
+    renderParkedList();
+    renderHistoryList();
+    renderFinanceDashboard();
+
+    openReceiptModal(finalizedRecord);
+  } catch (err) {
+    showToast('Falha na saída', err.message, 'danger');
+  }
 }
 
-function getCurrentFilteredHistory() {
-  return getFilteredHistory({
-    search: document.getElementById('history-search')?.value || '',
-    vehicleType: document.getElementById('history-type-filter')?.value || 'all',
-    startDate: document.getElementById('history-start-date')?.value || '',
-    endDate: document.getElementById('history-end-date')?.value || ''
-  });
+/* ==========================================================================
+   Modais de Comprovante (Ticket de Entrada e Recibo de Pagamento)
+   ========================================================================== */
+export function openEntryTicketModal(ticket) {
+  const modal = document.getElementById('modal-entry-ticket');
+  if (!modal) return;
+
+  const settings = getSettings();
+
+  document.getElementById('ticket-est-name').textContent = settings.parkingName;
+  document.getElementById('ticket-id-display').textContent = ticket.id;
+  document.getElementById('ticket-plate-display').textContent = formatPlate(ticket.plate);
+  document.getElementById('ticket-type-display').textContent = ticket.vehicleType === 'car' ? 'Carro / Utilitário' : 'Motocicleta';
+  document.getElementById('ticket-entry-time-display').textContent = formatDateTime(ticket.entryTime);
+  document.getElementById('ticket-driver-display').textContent = ticket.driverName || 'Não informado';
+  document.getElementById('ticket-rules-display').textContent =
+    `Tolerância: ${ticket.appliedPricing.toleranceMinutes} min | 1ª Hora: ${formatBRL(ticket.appliedPricing.hourlyRate)} | Fração ${ticket.appliedPricing.fractionMinutes} min: ${formatBRL(ticket.appliedPricing.hourlyRate * 0.25)}`;
+
+  modal.classList.add('open');
+  modal.classList.add('active');
+
+  const closeBtn = document.getElementById('entry-ticket-close');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      modal.classList.remove('open');
+      modal.classList.remove('active');
+    };
+  }
+
+  const printBtn = document.getElementById('entry-ticket-print');
+  if (printBtn) printBtn.onclick = () => window.print();
 }
 
-function renderHistoryTable() {
+export function openReceiptModal(record) {
+  const modal = document.getElementById('modal-receipt');
+  if (!modal) return;
+
+  const settings = getSettings();
+  currentReceiptData = record;
+
+  const summaryText =
+    (record.calculationMemory && record.calculationMemory.summary) ||
+    record.memorySummary ||
+    `Permanência de ${record.formattedDuration || formatDuration(record.totalMinutes || 0)}.`;
+
+  document.getElementById('receipt-est-name').textContent = settings.parkingName;
+  document.getElementById('receipt-id-display').textContent = record.id;
+  document.getElementById('receipt-plate-display').textContent = formatPlate(record.plate);
+  document.getElementById('receipt-type-display').textContent = record.vehicleType === 'car' ? 'Carro / Utilitário' : 'Motocicleta';
+  document.getElementById('receipt-entry-display').textContent = formatDateTime(record.entryTime);
+  document.getElementById('receipt-exit-display').textContent = formatDateTime(record.exitTime);
+  document.getElementById('receipt-duration-display').textContent = record.formattedDuration || formatDuration(record.totalMinutes || 0);
+  document.getElementById('receipt-memory-display').textContent = summaryText;
+  document.getElementById('receipt-total-display').textContent = formatBRL(record.totalCharged);
+  document.getElementById('receipt-method-display').textContent = record.payment ? record.payment.methodLabel : 'Pix';
+
+  modal.classList.add('open');
+  modal.classList.add('active');
+
+  const closeBtn = document.getElementById('receipt-modal-close');
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      modal.classList.remove('open');
+      modal.classList.remove('active');
+    };
+  }
+
+  const printBtn = document.getElementById('receipt-modal-print');
+  if (printBtn) printBtn.onclick = () => window.print();
+}
+
+/* ==========================================================================
+   Tela 5 — Histórico de Movimentações
+   ========================================================================== */
+function setupHistoryView() {
+  const searchInput = document.getElementById('history-search');
+  const typeFilter = document.getElementById('history-type-filter');
+  const startDateInput = document.getElementById('history-start-date');
+  const endDateInput = document.getElementById('history-end-date');
+  const clearBtn = document.getElementById('history-clear-filters');
+  const exportBtn = document.getElementById('history-export-csv');
+
+  const handleFilter = () => renderHistoryList();
+
+  if (searchInput) searchInput.addEventListener('input', handleFilter);
+  if (typeFilter) typeFilter.addEventListener('change', handleFilter);
+  if (startDateInput) startDateInput.addEventListener('change', handleFilter);
+  if (endDateInput) endDateInput.addEventListener('change', handleFilter);
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      if (typeFilter) typeFilter.value = 'all';
+      if (startDateInput) startDateInput.value = '';
+      if (endDateInput) endDateInput.value = '';
+      renderHistoryList();
+    });
+  }
+
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      const records = getFilteredHistoryRecords();
+      try {
+        downloadCSV(records);
+        showToast('Exportação concluída', `${records.length} registro(s) exportado(s) para CSV.`, 'success');
+      } catch (err) {
+        showToast('Exportação vazia', err.message, 'warning');
+      }
+    });
+  }
+}
+
+function getFilteredHistoryRecords() {
+  const query = document.getElementById('history-search')?.value || '';
+  const vehicleType = document.getElementById('history-type-filter')?.value || 'all';
+  const startDate = document.getElementById('history-start-date')?.value || '';
+  const endDate = document.getElementById('history-end-date')?.value || '';
+
+  return filterHistory({ query, vehicleType, startDate, endDate });
+}
+
+export function renderHistoryList() {
+  const records = getFilteredHistoryRecords();
   const tbody = document.getElementById('history-tbody');
+  const countBadge = document.getElementById('history-filtered-count');
+
+  if (countBadge) countBadge.textContent = `${records.length}`;
   if (!tbody) return;
 
-  const filtered = getCurrentFilteredHistory();
-  setText('history-filtered-count', filtered.length);
-
-  if (filtered.length === 0) {
+  if (records.length === 0) {
     tbody.innerHTML = `
       <tr>
         <td colspan="9">
           <div class="empty-state">
             <div class="empty-state-title">Nenhum registro encontrado</div>
-            <div class="empty-state-desc">As operações finalizadas aparecerão nesta listagem.</div>
+            <div class="empty-state-desc">Não há movimentações finalizadas para os critérios de pesquisa selecionados.</div>
           </div>
         </td>
       </tr>
@@ -737,61 +934,70 @@ function renderHistoryTable() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(h => {
-    const typeBadge = h.vehicleType === 'car'
-      ? `<span class="badge badge-car">Carro</span>`
-      : `<span class="badge badge-moto">Moto</span>`;
+  tbody.innerHTML = records.map(r => `
+    <tr>
+      <td class="mono">${escapeHTML(r.id)}</td>
+      <td><span class="plate-tag">${escapeHTML(formatPlate(r.plate))}</span></td>
+      <td>
+        <span class="badge ${r.vehicleType === 'car' ? 'badge-car' : 'badge-moto'}">
+          ${r.vehicleType === 'car' ? 'Carro' : 'Moto'}
+        </span>
+      </td>
+      <td class="mono">${formatDateTime(r.entryTime)}</td>
+      <td class="mono">${formatDateTime(r.exitTime)}</td>
+      <td class="mono">${escapeHTML(r.formattedDuration || formatDuration(r.totalMinutes || 0))}</td>
+      <td>${escapeHTML(r.payment ? r.payment.methodLabel : '—')}</td>
+      <td class="col-right mono" style="font-weight: 600; color: #E5E7EB;">${formatBRL(r.totalCharged)}</td>
+      <td class="col-right">
+        <button type="button" class="btn btn-secondary btn-xs history-view-receipt-btn" data-id="${escapeHTML(r.id)}">
+          Recibo
+        </button>
+      </td>
+    </tr>
+  `).join('');
 
-    return `
-      <tr>
-        <td class="mono">${escapeHTML(h.id)}</td>
-        <td><span class="plate-tag">${escapeHTML(formatPlateDisplay(h.plate))}</span></td>
-        <td>${typeBadge}</td>
-        <td class="mono">${formatDateTimeBR(h.entryTime)}</td>
-        <td class="mono">${formatDateTimeBR(h.exitTime)}</td>
-        <td class="mono">${h.durationFormatted || formatDuration(h.durationMinutes)}</td>
-        <td>${escapeHTML(getPaymentMethodLabel(h.paymentMethod))}</td>
-        <td class="col-right mono" style="color: #E5E7EB; font-weight: 600;">${formatBRL(h.totalCharged)}</td>
-        <td class="col-right">
-          <button type="button" class="btn btn-secondary btn-xs btn-history-receipt" data-id="${escapeHTML(h.id)}">Recibo</button>
-        </td>
-      </tr>
-    `;
-  }).join('');
-
-  tbody.querySelectorAll('.btn-history-receipt').forEach(btn => {
+  tbody.querySelectorAll('.history-view-receipt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      const record = getHistory().find(item => item.id === id);
-      if (record) openReceiptModal(record);
+      const rec = records.find(item => item.id === btn.dataset.id);
+      if (rec) openReceiptModal(rec);
     });
   });
 }
 
-/* ==================== 6. FINANCEIRO ==================== */
-function initFinanceSection() {
-  const periodBtns = document.querySelectorAll('.finance-period-btn');
-  periodBtns.forEach(btn => {
+/* ==========================================================================
+   Tela 6 — Módulo Financeiro
+   ========================================================================== */
+function setupFinanceView() {
+  const periodButtons = document.querySelectorAll('.finance-period-btn');
+  periodButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-      periodBtns.forEach(b => b.classList.remove('active'));
+      periodButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      AppState.financePeriod = btn.getAttribute('data-period');
-      renderFinanceView();
+
+      financePeriod = btn.dataset.period || 'all';
+      renderFinanceDashboard();
     });
   });
 }
 
-function renderFinanceView() {
-  const metrics = getFinancialMetrics(AppState.financePeriod);
+export function renderFinanceDashboard() {
+  const metrics = getFinancialMetrics(financePeriod);
 
-  setText('fin-total-revenue', formatBRL(metrics.totalRevenue));
-  setText('fin-today-revenue', formatBRL(metrics.todayRevenue));
-  setText('fin-payments-count', metrics.paymentsCount);
-  setText('fin-average-ticket', formatBRL(metrics.averageTicket));
+  const totalRevEl = document.getElementById('fin-total-revenue');
+  if (totalRevEl) totalRevEl.textContent = formatBRL(metrics.totalRevenue);
 
-  const chartBox = document.getElementById('fin-payment-distribution-chart');
-  if (chartBox) {
-    chartBox.innerHTML = renderPaymentDistributionSVG(metrics.byMethod);
+  const todayRevEl = document.getElementById('fin-today-revenue');
+  if (todayRevEl) todayRevEl.textContent = formatBRL(metrics.todayRevenue);
+
+  const countEl = document.getElementById('fin-payments-count');
+  if (countEl) countEl.textContent = metrics.paymentCount;
+
+  const avgEl = document.getElementById('fin-average-ticket');
+  if (avgEl) avgEl.textContent = formatBRL(metrics.averageTicket);
+
+  const chartEl = document.getElementById('fin-payment-distribution-chart');
+  if (chartEl) {
+    chartEl.innerHTML = renderPaymentDistributionSVG(metrics.byMethod);
   }
 
   const tbody = document.getElementById('fin-transactions-tbody');
@@ -811,114 +1017,176 @@ function renderFinanceView() {
     return;
   }
 
-  tbody.innerHTML = metrics.records.slice(0, 15).map(r => `
+  tbody.innerHTML = metrics.records.map(r => `
     <tr>
-      <td class="mono">${formatDateTimeBR(r.exitTime)}</td>
-      <td><span class="plate-tag">${escapeHTML(formatPlateDisplay(r.plate))}</span></td>
-      <td class="mono">${r.durationFormatted || formatDuration(r.durationMinutes)}</td>
-      <td>${escapeHTML(getPaymentMethodLabel(r.paymentMethod))}</td>
-      <td class="col-right mono" style="color: #22C55E; font-weight: 600;">${formatBRL(r.totalCharged)}</td>
+      <td class="mono">${formatDateTime(r.exitTime)}</td>
+      <td><span class="plate-tag">${escapeHTML(formatPlate(r.plate))}</span></td>
+      <td class="mono">${escapeHTML(r.formattedDuration || formatDuration(r.totalMinutes || 0))}</td>
+      <td>${escapeHTML(r.payment ? r.payment.methodLabel : '—')}</td>
+      <td class="col-right mono" style="font-weight: 600; color: #22C55E;">${formatBRL(r.totalCharged)}</td>
     </tr>
   `).join('');
 }
 
-/* ==================== 7. CONFIGURAÇÕES ==================== */
-function initSettingsSection() {
-  populateSettingsForm();
-
+/* ==========================================================================
+   Tela 7 — Configurações
+   ========================================================================== */
+function setupSettingsView() {
   const form = document.getElementById('form-settings');
-  if (!form) return;
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const capacity = getCapacityStatus();
-    const newCarSpots = parseInt(document.getElementById('setting-car-spots').value, 10);
-    const newMotoSpots = parseInt(document.getElementById('setting-moto-spots').value, 10);
-    const newCarRate = parseFloat(document.getElementById('setting-car-rate').value);
-    const newMotoRate = parseFloat(document.getElementById('setting-moto-rate').value);
-    const newTolerance = parseInt(document.getElementById('setting-tolerance').value, 10);
-    const newFraction = parseInt(document.getElementById('setting-fraction').value, 10);
-    const newName = document.getElementById('setting-parking-name').value.trim();
-
-    if (newCarSpots < capacity.car.occupied) {
-      showToast('Capacidade inválida', `Há ${capacity.car.occupied} carro(s) no pátio no momento.`, 'error');
-      return;
-    }
-    if (newMotoSpots < capacity.moto.occupied) {
-      showToast('Capacidade inválida', `Há ${capacity.moto.occupied} moto(s) no pátio no momento.`, 'error');
-      return;
-    }
-
-    if (newCarRate <= 0 || newMotoRate <= 0) {
-      showToast('Tarifa inválida', 'Os valores da 1ª hora devem ser maiores que zero.', 'error');
-      return;
-    }
-
-    saveSettings({
-      establishmentName: newName || 'Estacionamento Central',
-      carSpots: newCarSpots,
-      motoSpots: newMotoSpots,
-      carFirstHourRate: newCarRate,
-      motoFirstHourRate: newMotoRate,
-      toleranceMinutes: newTolerance,
-      additionalHourRatePercent: newFraction
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleSettingsSave();
     });
-
-    refreshAllViews();
-    showToast('Configurações salvas', 'Parâmetros operacionais atualizados.', 'success');
-  });
-}
-
-function populateSettingsForm() {
-  const s = getSettings();
-  const cap = getCapacityStatus();
-
-  setInputValue('setting-parking-name', s.establishmentName);
-  setInputValue('setting-car-spots', s.carSpots);
-  setInputValue('setting-moto-spots', s.motoSpots);
-  setInputValue('setting-car-rate', s.carFirstHourRate);
-  setInputValue('setting-moto-rate', s.motoFirstHourRate);
-  setInputValue('setting-tolerance', s.toleranceMinutes);
-  setInputValue('setting-fraction', s.additionalHourRatePercent);
-
-  const occInfo = document.getElementById('settings-current-occupancy-info');
-  if (occInfo) {
-    occInfo.textContent = `Ocupação atual: ${cap.car.occupied} carro(s) e ${cap.moto.occupied} moto(s) no pátio.`;
   }
 }
 
-/* ==================== DEMONSTRAÇÃO E LIMPEZA DE DADOS ==================== */
-function initDemoAndResetButtons() {
-  document.querySelectorAll('.btn-seed-demo').forEach(btn => {
-    btn.addEventListener('click', () => {
-      seedDemoData();
-      populateSettingsForm();
-      refreshAllViews();
-      showToast('Demonstração carregada', 'Pátio e histórico preenchidos com registros realistas.', 'success');
+export function renderSettingsForm() {
+  const settings = getSettings();
+  const capacity = getCapacityStatus();
+
+  const nameInput = document.getElementById('setting-parking-name');
+  if (nameInput) nameInput.value = settings.parkingName;
+
+  const carSpotsInput = document.getElementById('setting-car-spots');
+  if (carSpotsInput) carSpotsInput.value = settings.totalCarSpots;
+
+  const motoSpotsInput = document.getElementById('setting-moto-spots');
+  if (motoSpotsInput) motoSpotsInput.value = settings.totalMotoSpots;
+
+  const carRateInput = document.getElementById('setting-car-rate');
+  if (carRateInput) carRateInput.value = settings.carHourlyRate.toFixed(2);
+
+  const motoRateInput = document.getElementById('setting-moto-rate');
+  if (motoRateInput) motoRateInput.value = settings.motoHourlyRate.toFixed(2);
+
+  const toleranceInput = document.getElementById('setting-tolerance');
+  if (toleranceInput) toleranceInput.value = settings.toleranceMinutes;
+
+  const fractionInput = document.getElementById('setting-fraction');
+  if (fractionInput) fractionInput.value = settings.fractionMinutes;
+
+  const infoEl = document.getElementById('settings-current-occupancy-info');
+  if (infoEl) {
+    infoEl.textContent = `Ocupação atual: ${capacity.cars.occupied} carro(s) e ${capacity.motos.occupied} moto(s) no pátio.`;
+  }
+}
+
+function handleSettingsSave() {
+  const name = document.getElementById('setting-parking-name')?.value;
+  const carSpots = document.getElementById('setting-car-spots')?.value;
+  const motoSpots = document.getElementById('setting-moto-spots')?.value;
+  const carRate = document.getElementById('setting-car-rate')?.value;
+  const motoRate = document.getElementById('setting-moto-rate')?.value;
+  const tolerance = document.getElementById('setting-tolerance')?.value;
+  const fraction = document.getElementById('setting-fraction')?.value;
+
+  try {
+    updateParkingSettings({
+      parkingName: name,
+      totalCarSpots: carSpots,
+      totalMotoSpots: motoSpots,
+      carHourlyRate: carRate,
+      motoHourlyRate: motoRate,
+      toleranceMinutes: tolerance,
+      fractionMinutes: fraction
     });
+
+    showToast('Configurações salvas', 'Os parâmetros operacionais foram atualizados.', 'success');
+    updateHeaderStatus();
+    renderSettingsForm();
+    renderEntryView();
+    renderDashboard();
+  } catch (err) {
+    showToast('Erro ao salvar configurações', err.message, 'danger');
+  }
+}
+
+/* ==========================================================================
+   Botões de Demonstração (Seed) e Limpeza de Dados (Reset)
+   ========================================================================== */
+function triggerSeedDemo() {
+  if (window.confirm('Deseja carregar os dados de demonstração (veículos ativos e histórico)? Os registros existentes serão preservados.')) {
+    seedDemoData();
+    showToast('Demonstração carregada', 'Pátio e histórico preenchidos com registros de demonstração.', 'info');
+    updateHeaderStatus();
+    renderDashboard();
+    renderEntryView();
+    renderParkedList();
+    renderHistoryList();
+    renderFinanceDashboard();
+    renderSettingsForm();
+  }
+}
+
+function setupDemoAndReset() {
+  const seedBtns = document.querySelectorAll('.btn-seed-demo');
+  const resetBtns = document.querySelectorAll('.btn-reset-data');
+
+  seedBtns.forEach(btn => {
+    btn.addEventListener('click', () => triggerSeedDemo());
   });
 
-  document.querySelectorAll('.btn-reset-data').forEach(btn => {
+  resetBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const confirmed = window.confirm('Deseja limpar todos os veículos no pátio e o histórico de movimentações?');
-      if (!confirmed) return;
-
-      resetToFactory();
-      populateSettingsForm();
-      refreshAllViews();
-      showToast('Dados limpos', 'Registros removidos e configurações restauradas.', 'info');
+      if (window.confirm('ATENÇÃO: Deseja realmente limpar TODOS os dados operacionais e restaurar as configurações padrão de fábrica?')) {
+        resetAllData();
+        showToast('Dados limpos', 'Todos os registros foram apagados e as configurações iniciais restauradas.', 'warning');
+        updateHeaderStatus();
+        renderDashboard();
+        renderEntryView();
+        renderParkedList();
+        renderHistoryList();
+        renderFinanceDashboard();
+        renderSettingsForm();
+      }
     });
   });
 }
 
-/* ==================== HELPERS DOM ==================== */
-function setText(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = value;
+/* ==========================================================================
+   Menu Mobile e Toasts de Feedback Visual
+   ========================================================================== */
+function setupMobileSidebar() {
+  const toggleBtn = document.getElementById('mobile-menu-toggle');
+  const sidebar = document.querySelector('.sidebar');
+
+  if (toggleBtn && sidebar) {
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      sidebar.classList.toggle('mobile-open');
+    });
+  }
 }
 
-function setInputValue(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.value = value;
+export function showToast(title, message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const icons = {
+    success: '✓',
+    danger: '✕',
+    error: '✕',
+    warning: '!',
+    info: 'i'
+  };
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+
+  toast.innerHTML = `
+    <span class="toast-icon">${icons[type] || icons.info}</span>
+    <div class="toast-content">
+      <div class="toast-title">${escapeHTML(title)}</div>
+      <div class="toast-message">${escapeHTML(message)}</div>
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.2s ease';
+    setTimeout(() => toast.remove(), 200);
+  }, 4000);
 }

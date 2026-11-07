@@ -628,7 +628,8 @@
   z-index: 500;
 }
 
-.modal-backdrop.open {
+.modal-backdrop.open,
+.modal-backdrop.active {
   display: flex;
 }
 
@@ -1006,7 +1007,8 @@
   border-left-color: var(--color-success);
 }
 
-.toast-error {
+.toast-error,
+.toast-danger {
   border-left-color: var(--color-danger);
 }
 

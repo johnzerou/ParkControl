@@ -154,20 +154,23 @@ export function renderMovementsChartSVG(active, history) {
  * @returns {string} HTML estruturado
  */
 export function renderCategoryBreakdownHTML(capacity) {
-  const carPct = capacity.car.total > 0 ? Math.round((capacity.car.occupied / capacity.car.total) * 100) : 0;
-  const motoPct = capacity.moto.total > 0 ? Math.round((capacity.moto.occupied / capacity.moto.total) * 100) : 0;
+  const cars = capacity.cars || capacity.car || { total: 0, occupied: 0, available: 0 };
+  const motos = capacity.motos || capacity.moto || { total: 0, occupied: 0, available: 0 };
 
-  const maxCarCells = Math.min(capacity.car.total, 20);
-  const maxMotoCells = Math.min(capacity.moto.total, 10);
+  const carPct = cars.total > 0 ? Math.round((cars.occupied / cars.total) * 100) : 0;
+  const motoPct = motos.total > 0 ? Math.round((motos.occupied / motos.total) * 100) : 0;
+
+  const maxCarCells = Math.min(cars.total, 20);
+  const maxMotoCells = Math.min(motos.total, 10);
 
   let cellsHTML = '';
   for (let i = 1; i <= maxCarCells; i++) {
-    const isOccupied = i <= capacity.car.occupied;
+    const isOccupied = i <= cars.occupied;
     const label = `C${String(i).padStart(2, '0')}`;
     cellsHTML += `<div class="slot-cell ${isOccupied ? 'occupied' : ''}" title="Vaga Carro ${label}: ${isOccupied ? 'Ocupada' : 'Livre'}">${label}</div>`;
   }
   for (let i = 1; i <= maxMotoCells; i++) {
-    const isOccupied = i <= capacity.moto.occupied;
+    const isOccupied = i <= motos.occupied;
     const label = `M${String(i).padStart(2, '0')}`;
     cellsHTML += `<div class="slot-cell ${isOccupied ? 'occupied' : ''}" title="Vaga Moto ${label}: ${isOccupied ? 'Ocupada' : 'Livre'}">${label}</div>`;
   }
@@ -177,7 +180,7 @@ export function renderCategoryBreakdownHTML(capacity) {
       <div class="cat-row">
         <div class="cat-row-header">
           <span class="cat-row-title">Carros / Utilitários</span>
-          <span class="cat-row-stats">${capacity.car.occupied}/${capacity.car.total} ocupadas (${capacity.car.available} livres)</span>
+          <span class="cat-row-stats">${cars.occupied}/${cars.total} ocupadas (${cars.available} livres)</span>
         </div>
         <div class="progress-track">
           <div class="progress-fill" style="width: ${carPct}%; background-color: ${carPct >= 90 ? '#EF4444' : '#3B82F6'};"></div>
@@ -187,7 +190,7 @@ export function renderCategoryBreakdownHTML(capacity) {
       <div class="cat-row">
         <div class="cat-row-header">
           <span class="cat-row-title">Motocicletas</span>
-          <span class="cat-row-stats">${capacity.moto.occupied}/${capacity.moto.total} ocupadas (${capacity.moto.available} livres)</span>
+          <span class="cat-row-stats">${motos.occupied}/${motos.total} ocupadas (${motos.available} livres)</span>
         </div>
         <div class="progress-track">
           <div class="progress-fill" style="width: ${motoPct}%; background-color: ${motoPct >= 90 ? '#EF4444' : '#64748B'};"></div>
@@ -196,7 +199,7 @@ export function renderCategoryBreakdownHTML(capacity) {
 
       <div class="slot-matrix-section">
         <div class="slot-matrix-header">
-          <span> Setores C (Carros) e M (Motos)</span>
+          <span>Setores C (Carros) e M (Motos)</span>
           <div class="slot-legend">
             <span class="slot-legend-item"><span class="slot-dot slot-dot-free"></span>Livre</span>
             <span class="slot-legend-item"><span class="slot-dot slot-dot-busy"></span>Ocupada</span>
