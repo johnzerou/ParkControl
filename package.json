@@ -1,0 +1,17 @@
+{
+  "name": "parkcontrol",
+  "version": "1.0.0",
+  "description": "Sistema de Controle e Gerenciamento de Estacionamento — FATEC Carapicuíba ADS 2026",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/test-suite.js"
+  },
+  "keywords": [
+    "parking",
+    "vanilla-js",
+    "fatec",
+    "engenharia-de-software"
+  ],
+  "author": "João Pedro Ribas da Silva & Nicolas Ferreira Souza",
+  "license": "MIT"
+}

@@ -1,0 +1,134 @@
+/* ==========================================================================
+   ParkControl — Sistema de Controle e Gerenciamento de Estacionamento
+   responsive.css — Adaptação Responsiva para Desktop, Tablet e Mobile
+   Autores: João Pedro Ribas da Silva & Nicolas Ferreira Souza
+   FATEC Carapicuíba — ADS Noite 2026
+   ========================================================================== */
+
+/* Dispositivos Tablet e Médios (<= 1024px) */
+@media screen and (max-width: 1024px) {
+  :root {
+    --sidebar-width: 220px;
+    --spacing-xl: 1.25rem;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .content-area {
+    padding: var(--spacing-lg);
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dispositivos Mobile e Telas Menores (< 768px) */
+@media screen and (max-width: 768px) {
+  :root {
+    --header-height: 60px;
+  }
+
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+    box-shadow: var(--shadow-modal);
+    width: 280px;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .main-wrapper {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .menu-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+  }
+
+  .header-clock {
+    display: none;
+  }
+
+  .header-title-wrapper p {
+    display: none;
+  }
+
+  .top-header {
+    padding: 0 var(--spacing-md);
+  }
+
+  .content-area {
+    padding: var(--spacing-md);
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .vehicle-selector-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-methods-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .card-footer {
+    flex-direction: column;
+  }
+
+  .card-footer .btn {
+    width: 100%;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 10px 12px;
+  }
+
+  .toast-container {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .toast {
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+/* Telas Ultra Pequenas (< 480px) */
+@media screen and (max-width: 480px) {
+  .status-badge span.status-text {
+    display: none;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    font-size: var(--font-size-xs);
+  }
+
+  .form-control.plate-input {
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+  }
+}
