@@ -650,6 +650,37 @@ runTest('CT19', 'Execução sem exceções de initApp, navigateTo e renderizador
   }
 });
 
+// CT20: Verificação dos arquivos de identidade visual (logos, ícone e favicon) e referências HTML
+runTest('CT20', 'Integridade dos assets da marca ParkControl e referências no index.html', () => {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  const rootDir = path.join(__dirname, '..');
+  const assetsDir = path.join(rootDir, 'assets');
+
+  const requiredAssets = [
+    'parkcontrol_logo_dark.png',
+    'parkcontrol_logo_light.png',
+    'parkcontrol_icon.png',
+    'parkcontrol_logo_monochrome.png',
+    'parkcontrol_logo_dark_transparent.png',
+    'parkcontrol_logo_light_transparent.png',
+    'favicon.ico'
+  ];
+
+  requiredAssets.forEach(file => {
+    const fullPath = path.join(assetsDir, file);
+    assert(fs.existsSync(fullPath), `Asset obrigatório deve existir em assets/${file}`);
+    const stat = fs.statSync(fullPath);
+    assert(stat.size > 0, `Asset assets/${file} não pode estar vazio`);
+  });
+
+  assert(fs.existsSync(path.join(rootDir, 'favicon.ico')), 'favicon.ico deve existir na raiz para carregamento imediato');
+
+  const htmlContent = fs.readFileSync(path.join(rootDir, 'index.html'), 'utf-8');
+  assert(htmlContent.includes('./assets/parkcontrol_logo_dark_transparent.png'), 'Sidebar deve referenciar parkcontrol_logo_dark_transparent.png');
+  assert(htmlContent.includes('./assets/parkcontrol_icon.png'), 'Comprovantes/apple-touch-icon devem referenciar parkcontrol_icon.png');
+  assert(htmlContent.includes('./favicon.ico'), 'HTML deve referenciar favicon.ico');
+});
+
 console.log('\n================================================================');
 const passed = testResults.filter(t => t.status === 'APROVADO').length;
 const total = testResults.length;

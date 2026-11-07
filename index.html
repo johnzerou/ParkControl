@@ -11,6 +11,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Identidade Visual e Favicon -->
+  <link rel="icon" type="image/x-icon" href="./favicon.ico" />
+  <link rel="shortcut icon" type="image/x-icon" href="./assets/favicon.ico" />
+  <link rel="apple-touch-icon" href="./assets/parkcontrol_icon.png" />
+
   <!-- Folhas de Estilo Modulares -->
   <link rel="stylesheet" href="./css/style.css" />
   <link rel="stylesheet" href="./css/components.css" />
@@ -23,11 +28,12 @@
     <!-- ==================== SIDEBAR ==================== -->
     <aside class="sidebar" aria-label="Navegação Principal">
       <div class="sidebar-brand">
-        <div class="brand-mark" aria-hidden="true">P</div>
-        <div class="brand-text">
-          <span class="brand-name">ParkControl</span>
-          <span class="brand-unit" id="header-establishment-name">Estacionamento Central</span>
-        </div>
+        <img
+          src="./assets/parkcontrol_logo_dark_transparent.png"
+          alt="ParkControl"
+          class="sidebar-logo"
+        />
+        <span class="brand-unit" id="header-establishment-name">Estacionamento Central</span>
       </div>
 
       <nav class="sidebar-nav">
@@ -789,6 +795,11 @@
       <div class="modal-body">
         <div class="ticket-sheet">
           <div class="ticket-head">
+            <img
+              src="./assets/parkcontrol_icon.png"
+              alt="ParkControl"
+              class="ticket-logo"
+            />
             <div class="ticket-brand" id="ticket-est-name">Estacionamento Central</div>
             <div class="ticket-doc-type">Comprovante de Entrada</div>
           </div>
@@ -840,6 +851,11 @@
       <div class="modal-body">
         <div class="ticket-sheet">
           <div class="ticket-head">
+            <img
+              src="./assets/parkcontrol_icon.png"
+              alt="ParkControl"
+              class="ticket-logo"
+            />
             <div class="ticket-brand" id="receipt-est-name">Estacionamento Central</div>
             <div class="ticket-doc-type">Recibo de Saída</div>
           </div>

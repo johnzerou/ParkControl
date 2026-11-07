@@ -88,3 +88,4 @@ Durante a auditoria técnica comparativa entre a versão funcional anterior (`bb
 
 - Todos os caminhos em `index.html` (`./css/style.css`, `./css/components.css`, `./css/responsive.css`, `./js/app.js`) e todos os imports ES6 internos em `js/*.js` utilizam caminhos relativos explícitos com extensão `.js`, garantindo carregamento nativo em produção na Vercel sem necessidade de bundler.
 - Nenhuma dependência externa de runtime foi adicionada.
+
