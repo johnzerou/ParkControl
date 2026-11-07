@@ -182,3 +182,4 @@ export function getLocalDatetimeInputValue(date = new Date()) {
   const minutes = pad(d.getMinutes());
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
+

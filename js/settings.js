@@ -73,3 +73,4 @@ export function updateParkingSettings({
     fractionMinutes: fraction
   });
 }
+

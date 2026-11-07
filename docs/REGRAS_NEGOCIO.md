@@ -157,3 +157,4 @@ Considerando a tabela padrão:
 
 ### 4. Coerência entre Especificação e Implementação
 As fórmulas e validações acima foram transcritas em funções puras nos arquivos `js/pricing.js`, `js/vehicles.js` e `js/utils.js`, garantindo que não existam desvios entre a teoria da especificação e o comportamento computacional do protótipo.
+

@@ -287,3 +287,4 @@ export function seedDemoData() {
   safeSetJSON(STORAGE_KEYS.ACTIVE, demoActive);
   safeSetJSON(STORAGE_KEYS.HISTORY, demoHistory);
 }
+

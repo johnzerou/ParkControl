@@ -100,3 +100,4 @@ Desenvolver um protótipo funcional, moderno, responsivo e interativo para contr
 
 ### 10. Considerações Finais
 O ParkControl consolida os conhecimentos adquiridos na FATEC Carapicuíba pelos discentes João Pedro Ribas da Silva e Nicolas Ferreira Souza. A solução comprova que a engenharia de software disciplinada — baseada em levantamento minucioso de requisitos, modelagem rigorosa e arquitetura limpa — é a base para a construção de sistemas computacionais confiáveis, manuteníveis e prontos para evolução tecnológica.
+

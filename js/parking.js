@@ -105,3 +105,4 @@ export function validateCapacityChange(newCarCapacity, newMotoCapacity) {
 
   return { isValid: true };
 }
+

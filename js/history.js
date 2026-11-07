@@ -221,3 +221,4 @@ export function downloadCSV(records, filename = `parkcontrol_historico_${new Dat
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+

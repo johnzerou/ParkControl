@@ -174,3 +174,4 @@ sequenceDiagram
 - **Armazenamento no Navegador (Client-side):** O `localStorage` é vinculado à origem e ao navegador local da máquina executora. Os dados não sincronizam automaticamente entre múltiplos computadores ou operadores remotos simultâneos.
 - **Segurança e Criptografia:** Como protótipo acadêmico sem backend, não há autenticação JWT/OAuth2 com controle de senhas de operadores nem proteção contra inspeção manual de dados via DevTools do navegador.
 - **Transações Financeiras Demonstrativas:** O fluxo de pagamento emite tíquetes e recibos de forma fidedigna ao processo comercial, porém não integra transações de débito/crédito reais com adquirentes nem gera QR Codes Pix com o Banco Central.
+

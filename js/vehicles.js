@@ -113,3 +113,4 @@ export function findActiveVehicle(identifier) {
   const clean = normalizePlate(identifier);
   return list.find(v => v.id === identifier || normalizePlate(v.plate) === clean) || null;
 }
+

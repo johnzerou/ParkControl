@@ -57,3 +57,4 @@ A Matriz de Rastreabilidade garante o alinhamento bidirecional e a conformidade 
 | **RNF010** | Tratamento e Sanitização | `utils.escapeHTML` e validação defensiva | Impossibilidade de injeção XSS por campos de texto. |
 | **RNF011** | Separação Camadas/Negócio | `pricing.js` e `parking.js` puros | Funções testáveis de forma independente fora do navegador (Node.js). |
 | **RNF012** | Documentação Organizada | Pasta `docs/` com 11 especificações | Atendimento total à estrutura solicitada no roteiro acadêmico. |
+

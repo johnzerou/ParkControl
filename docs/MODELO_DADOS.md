@@ -203,3 +203,4 @@ erDiagram
 
 ### 5. Validação e Integridade dos Dados
 O módulo `storage.js` realiza verificações de tipos e saneamento básico no carregamento de cada registro. Caso algum dado no `localStorage` seja corrompido ou apresente inconsistências (ex: campos ausentes ou valores monetários negativos), o sistema adota valores padrão seguros e emite aviso em console, preservando a integridade da aplicação.
+

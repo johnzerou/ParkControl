@@ -103,3 +103,4 @@ export function getFinancialMetrics(period = 'all') {
     records: filteredRecords
   };
 }
+

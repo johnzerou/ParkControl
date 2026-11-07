@@ -131,3 +131,4 @@ export function calculateCashPayment(totalAmount, amountPaid) {
       : 'Pagamento exato, sem troco.'
   };
 }
+

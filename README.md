@@ -257,3 +257,4 @@ Toda a documentação acadêmica de Engenharia de Software encontra-se organizad
 <p align="center">
   <em>Desenvolvido por João Pedro Ribas da Silva e Nicolas Ferreira Souza | ADS Noite — FATEC Carapicuíba | 2026</em>
 </p>
+

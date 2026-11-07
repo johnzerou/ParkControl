@@ -154,3 +154,4 @@ O sistema adota uma estrutura em Single Page Application (SPA), dividida em 3 gr
 | **Tela 5: Histórico** | RF009, RF010, RF017, RF018 | RN012, RN014 |
 | **Tela 6: Financeiro** | RF010, RF011, RF015 | RN010, RN014, RN016 |
 | **Tela 7: Configurações** | RF012, RF013, RF016, RF018, RF019 | RN014, RN015, RN017 |
+

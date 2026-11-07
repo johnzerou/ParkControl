@@ -279,3 +279,4 @@ Este documento apresenta a especificação técnica formal dos Requisitos Funcio
 
 ### 5. Resumo de Rastreabilidade Preliminar
 Todos os requisitos funcionais descritos conectam-se diretamente às regras de negócio RN001 a RN017 e são respaldados por casos de uso e casos de teste específicos, garantindo que o protótipo execute rigorosamente o escopo planejado.
+

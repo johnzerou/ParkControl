@@ -242,3 +242,4 @@ Este documento formaliza o Plano de Testes do sistema **ParkControl**, engloband
 
 ### 3. Conclusão da Homologação
 A execução dos 15 cenários de teste certificou que todos os Requisitos Funcionais (RF001 a RF018) e Regras de Negócio (RN001 a RN017) foram atendidos rigorosamente pelo código implementado, atestando a robustez e estabilidade do protótipo **ParkControl**.
+

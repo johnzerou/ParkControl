@@ -127,3 +127,4 @@ Este documento detalha as Histórias de Usuário (User Stories) do projeto **Par
   1. O botão "Carregar Dados de Demonstração" deve criar veículos ativos representativos e histórico do dia com múltiplos métodos de pagamento.
   2. O botão "Limpar Todos os Dados" deve resetar com confirmação o estado para o padrão vazio.
   3. A aplicação não deve possuir dependência de mocks fixos inalteráveis no código fonte.
+

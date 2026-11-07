@@ -251,3 +251,4 @@ flowchart LR
   3. O sistema remove as chaves operacionais do `localStorage` e recria a configuração padrão.
   4. O sistema emite notificação e atualiza todas as visualizações para o estado vazio.
 - **Pós-condições:** LocalStorage populado com massa de dados de teste ou redefinido para o padrão inicial.
+
